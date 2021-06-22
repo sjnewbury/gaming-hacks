@@ -1,0 +1,22 @@
+--- ./Makefile~	2020-10-12 19:06:04.000000000 +0100
++++ ./Makefile	2020-10-12 19:25:57.657258587 +0100
+@@ -125,7 +125,7 @@
+ CFLAGS += -fsanitize=address
+ endif
+ else
+-CFLAGS ?= -O2 -Wall -pipe -fomit-frame-pointer
++CFLAGS ?= -Wall -pipe -fomit-frame-pointer
+ endif
+ 
+ # Always needed are:
+@@ -266,9 +266,7 @@
+ # ----------
+ 
+ # Base LDFLAGS. This is just the library path.
+-ifeq ($(YQ2_OSTYPE),Linux)
+-LDFLAGS ?= -L/usr/lib
+-else ifeq ($(YQ2_OSTYPE),FreeBSD)
++ifeq ($(YQ2_OSTYPE),FreeBSD)
+ LDFLAGS ?= -L/usr/local/lib
+ else ifeq ($(YQ2_OSTYPE),OpenBSD)
+ LDFLAGS ?= -L/usr/local/lib

@@ -1,0 +1,18 @@
+--- ./src/client/client.h~	2005-01-27 22:25:40.000000000 +0000
++++ ./src/client/client.h	2020-10-12 17:22:56.804158955 +0100
+@@ -19,6 +19,9 @@
+ */
+ // client.h -- primary header for client
+ 
++#ifndef	_CLIENT_H
++#define	_CLIENT_H 1
++
+ //define	PARANOID			// speed sapping error checking
+ 
+ #ifdef __x86_64__
+@@ -676,3 +679,5 @@
+ #ifdef QMAX
+ void SetParticleImages (void);
+ #endif
++#endif /* client.h */
++

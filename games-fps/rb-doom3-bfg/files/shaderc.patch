@@ -1,0 +1,63 @@
+--- ./neo/CMakeLists.txt~	2020-11-07 23:20:13.000000000 +0000
++++ ./neo/CMakeLists.txt	2020-11-07 23:26:50.760145799 +0000
+@@ -356,12 +356,13 @@
+ 	if(SPIRV_SHADERC)
+ 		add_definitions(-DSPIRV_SHADERC)
+ 
+-		if(CMAKE_CL_64)
+-			link_directories($ENV{VULKAN_SDK}/Lib)
+-		else()
+-			link_directories($ENV{VULKAN_SDK}/Lib32)
+-		endif()
+-
++		if(Darwin)
++			if(CMAKE_CL_64)
++				link_directories($ENV{VULKAN_SDK}/Lib)
++			else()
++				link_directories($ENV{VULKAN_SDK}/Lib32)
++			endif()
++		endif()
+ 	else()
+ 		# override Glslang build options
+ 		
+--- ./neo/CMakeLists.txt~	2020-11-07 23:31:52.000000000 +0000
++++ ./neo/CMakeLists.txt	2020-11-07 23:39:28.292881158 +0000
+@@ -1623,23 +1623,25 @@
+ 		endif()
+ 		
+ 		if(USE_VULKAN)
+-            list(APPEND RBDOOM3_INCLUDES ${RENDERER_VULKAN_INCLUDES})
+-            list(APPEND RBDOOM3_SOURCES ${RENDERER_VULKAN_SOURCES})
++			list(APPEND RBDOOM3_INCLUDES ${RENDERER_VULKAN_INCLUDES})
++			list(APPEND RBDOOM3_SOURCES ${RENDERER_VULKAN_SOURCES})
+             
+-            set(Vulkan_LIBRARIES
+-                ${Vulkan_LIBRARY}
++			set(Vulkan_LIBRARIES
++				${Vulkan_LIBRARY}
+ 				${X11_XCB_LIBRARIES}
++			)
+-                glslang
+-                SPIRV
+-                )
+ 
+-            if(ENABLE_GLSLANG_BINARIES)
+-                list(APPEND Vulkan_LIBRARIES glslang-default-resource-limits)
+-            endif()
+-            
++			if(SPIRV_SHADERC)
++				list(APPEND Vulkan_LIBRARIES shaderc_shared)
++			else()
++				list(APPEND Vulkan_LIBRARIES glslang SPIRV)
++				if(ENABLE_GLSLANG_BINARIES)
++					list(APPEND Vulkan_LIBRARIES glslang-default-resource-limits)
++				endif()
++			endif()
+         else()
+-            list(APPEND RBDOOM3_INCLUDES ${RENDERER_OPENGL_INCLUDES})
+-            list(APPEND RBDOOM3_SOURCES ${RENDERER_OPENGL_SOURCES})
++		list(APPEND RBDOOM3_INCLUDES ${RENDERER_OPENGL_INCLUDES})
++		list(APPEND RBDOOM3_SOURCES ${RENDERER_OPENGL_SOURCES})
+         endif()
+ 			
+ 	endif()

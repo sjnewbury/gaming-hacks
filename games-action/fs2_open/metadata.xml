@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<herd>no-herd</herd>
+	<maintainer>
+		<email>maintainer-needed@gentoo.org</email>
+	</maintainer>
+	<longdescription lang="en">Freespace Open Source code is the
+	free and open-source version of the freespace2 engine and
+	allow to run the Freespace 2 retail version of the game, if
+	the original CDs are copied on the disk and allows to run any
+	MOD or total conversions like the babylon project.  For each
+	total conversion a use flag must be defined with the proper
+	logic implemented in the ebuild.
+	</longdescription>
+	<use>
+	  <flag name="freespace2">Compiles an instance of the code for
+	  the Freespace2 retail version. You can then use
+	  <pkg>games-action/freespace2-data</pkg> to install the data
+	  of the retail CDs of Freespace2. You can additionally add
+	  the package <pkg>games-action/freespace2-mediavps</pkg> To
+	  get enhanced models and graphics for the
+	  game. <pkg>games-action/freespace2-meta</pkg> can be used to
+	  install everything at once, as long as this flag is set for
+	  this package.</flag>
+	  <flag name="babylon">Compiles an instance of the code for
+	  The Babylon Project total conversion.  You have then to
+	  install <pkg>games-action/babylon-mediavps</pkg> and
+	  <pkg>games-action/babylon-zathras</pkg> in order for the
+	  game to be playable. <pkg>games-action/babylon-meta</pkg>
+	  can be used to install everything at once, as long as this
+	  flag is set for this package.</flag>
+	  <flag name="debug"> Compile the binary with debug mode
+	  enabled.
+	  </flag>
+	  <flag name="inferno"> Activate some enhancement in the code
+	  from the inferno project. (HIGHLY RECOMMANDED).
+	  </flag>
+	  <flag name="Speech"> FIX ME.
+	  </flag>
+	</use>
+</pkgmetadata>

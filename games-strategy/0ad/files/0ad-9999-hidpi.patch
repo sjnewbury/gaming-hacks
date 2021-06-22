@@ -1,0 +1,1626 @@
+Index: binaries/data/config/default.cfg
+===================================================================
+--- ./binaries/data/config/default.cfg
++++ ./binaries/data/config/default.cfg
+@@ -41,9 +41,7 @@
+ ; Default server name or IP to use in multiplayer
+ multiplayerserver = "127.0.0.1"
+ 
+-; Force a particular resolution. (If these are 0, the default is
+-; to keep the current desktop resolution in fullscreen mode or to
+-; use 1024x768 in windowed mode.)
++; Force a particular resolution. Only works in windowed mode.
+ xres = 0
+ yres = 0
+ 
+@@ -53,6 +51,9 @@
+ ; Preferred display (for multidisplay setups, only works with SDL 2.0)
+ display = 0
+ 
++; Enable high-dpi (Apple calls this "Retina") rendering.
++highdpi = false
++
+ ; Emulate right-click with Ctrl+Click on Mac mice
+ macmouse = false
+ 
+@@ -105,6 +106,9 @@
+ ; Experimental probably-non-working GPU skinning support; requires preferglsl; use at own risk
+ gpuskinning = false
+ 
++; Increase/decrease the rendering resolution (only does something with post-proc enabled at the moment).
++renderer.resolution = 1.0
++
+ ; Use smooth LOS interpolation
+ smoothlos = false
+ 
+Index: source/graphics/Camera.cpp
+===================================================================
+--- ./source/graphics/Camera.cpp
++++ ./source/graphics/Camera.cpp
+@@ -30,6 +30,7 @@
+ #include "maths/MathUtil.h"
+ #include "maths/Vector4D.h"
+ #include "ps/Game.h"
++#include "ps/ScreenSize.h"
+ #include "ps/World.h"
+ #include "renderer/Renderer.h"
+ #include "renderer/WaterManager.h"
+@@ -166,8 +167,8 @@
+ 		wPts[i] = m_Orientation.Transform(cPts[i]);
+ 
+ 	// get world space position of mouse point
+-	float dx = (float)px / (float)g_Renderer.GetWidth();
+-	float dz = 1 - (float)py / (float)g_Renderer.GetHeight();
++	float dx = (float)px / (float)g_ScreenSize.LogicalWidth();
++	float dz = 1 - (float)py / (float)g_ScreenSize.LogicalHeight();
+ 
+ 	CVector3D vdx = wPts[1] - wPts[0];
+ 	CVector3D vdz = wPts[3] - wPts[0];
+@@ -188,8 +189,8 @@
+ 
+ 	x = screenspace.X / screenspace.W;
+ 	y = screenspace.Y / screenspace.W;
+-	x = (x + 1) * 0.5f * g_Renderer.GetWidth();
+-	y = (1 - y) * 0.5f * g_Renderer.GetHeight();
++	x = (x + 1) * 0.5f * g_ScreenSize.LogicalWidth();
++	y = (1 - y) * 0.5f * g_ScreenSize.LogicalHeight();
+ }
+ 
+ CVector3D CCamera::GetWorldCoordinates(int px, int py, bool aboveWater) const
+Index: source/graphics/CinemaManager.cpp
+===================================================================
+--- ./source/graphics/CinemaManager.cpp
++++ ./source/graphics/CinemaManager.cpp
+@@ -37,8 +37,8 @@
+ #include "ps/ConfigDB.h"
+ #include "ps/CStr.h"
+ #include "ps/Game.h"
+-#include "ps/GameSetup/Config.h"
+ #include "ps/Hotkey.h"
++#include "ps/ScreenSize.h"
+ #include "ps/World.h"
+ #include "simulation2/components/ICmpCinemaManager.h"
+ #include "simulation2/components/ICmpOverlayRenderer.h"
+@@ -189,8 +189,8 @@
+ 
+ void CCinemaManager::DrawBars() const
+ {
+-	int height = (float)g_xres / 2.39f;
+-	int shift = (g_yres - height) / 2;
++	int height = (float)g_ScreenSize.GuiWidth() / 2.39f;
++	int shift = (g_ScreenSize.GuiHeight() - height) / 2;
+ 	if (shift <= 0)
+ 		return;
+ 
+@@ -205,7 +205,7 @@
+ 	glPushMatrix();
+ 	glLoadIdentity();
+ 	CMatrix3D transform;
+-	transform.SetOrtho(0.f, (float)g_xres, 0.f, (float)g_yres, -1.f, 1000.f);
++	transform.SetOrtho(0.f, (float)g_ScreenSize.GuiWidth(), 0.f, (float)g_ScreenSize.GuiHeight(), -1.f, 1000.f);
+ 	glLoadMatrixf(&transform._11);
+ 
+ 	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+@@ -215,16 +215,16 @@
+ 
+ 	glBegin(GL_QUADS);
+ 	glVertex2i(0, 0);
+-	glVertex2i(g_xres, 0);
+-	glVertex2i(g_xres, shift);
++	glVertex2i(g_ScreenSize.GuiWidth(), 0);
++	glVertex2i(g_ScreenSize.GuiWidth(), shift);
+ 	glVertex2i(0, shift);
+ 	glEnd();
+ 
+ 	glBegin(GL_QUADS);
+-	glVertex2i(0, g_yres - shift);
+-	glVertex2i(g_xres, g_yres - shift);
+-	glVertex2i(g_xres, g_yres);
+-	glVertex2i(0, g_yres);
++	glVertex2i(0, g_ScreenSize.GuiHeight() - shift);
++	glVertex2i(g_ScreenSize.GuiWidth(), g_ScreenSize.GuiHeight() - shift);
++	glVertex2i(g_ScreenSize.GuiWidth(), g_ScreenSize.GuiHeight());
++	glVertex2i(0, g_ScreenSize.GuiHeight());
+ 	glEnd();
+ 
+ 	glDisable(GL_BLEND);
+Index: source/graphics/GameView.cpp
+===================================================================
+--- ./source/graphics/GameView.cpp
++++ ./source/graphics/GameView.cpp
+@@ -52,6 +52,7 @@
+ #include "ps/LoaderThunks.h"
+ #include "ps/Profile.h"
+ #include "ps/Pyrogenesis.h"
++#include "ps/ScreenSize.h"
+ #include "ps/TouchInput.h"
+ #include "ps/World.h"
+ #include "renderer/Renderer.h"
+@@ -60,8 +61,6 @@
+ #include "simulation2/components/ICmpPosition.h"
+ #include "simulation2/components/ICmpRangeManager.h"
+ 
+-extern int g_xres, g_yres;
+-
+ // Maximum distance outside the edge of the map that the camera's
+ // focus point can be moved
+ static const float CAMERA_EDGE_MARGIN = 2.0f*TERRAIN_TILE_SIZE;
+@@ -358,8 +357,9 @@
+ 	SViewPort vp;
+ 	vp.m_X = 0;
+ 	vp.m_Y = 0;
+-	vp.m_Width = g_xres;
+-	vp.m_Height = g_yres;
++	// TODO: support renderer scaling here.
++	vp.m_Width = g_ScreenSize.RendererWidth();
++	vp.m_Height = g_ScreenSize.RendererHeight();
+ 	m->ViewCamera.SetViewPort(vp);
+ 
+ 	m->ViewCamera.SetProjection(m->ViewNear, m->ViewFar, m->ViewFOV);
+@@ -659,12 +659,12 @@
+ 
+ 	if (g_mouse_active)
+ 	{
+-		if (g_mouse_x >= g_xres - 2 && g_mouse_x < g_xres)
++		if (g_mouse_x >= g_ScreenSize.LogicalWidth() - 2 && g_mouse_x < g_ScreenSize.LogicalWidth())
+ 			moveRightward += m->ViewScrollSpeed * deltaRealTime;
+ 		else if (g_mouse_x <= 3 && g_mouse_x >= 0)
+ 			moveRightward -= m->ViewScrollSpeed * deltaRealTime;
+ 
+-		if (g_mouse_y >= g_yres - 2 && g_mouse_y < g_yres)
++		if (g_mouse_y >= g_ScreenSize.LogicalHeight() - 2 && g_mouse_y < g_ScreenSize.LogicalHeight())
+ 			moveForward -= m->ViewScrollSpeed * deltaRealTime;
+ 		else if (g_mouse_y <= 3 && g_mouse_y >= 0)
+ 			moveForward += m->ViewScrollSpeed * deltaRealTime;
+Index: source/graphics/TextRenderer.cpp
+===================================================================
+--- ./source/graphics/TextRenderer.cpp
++++ ./source/graphics/TextRenderer.cpp
+@@ -24,7 +24,7 @@
+ #include "graphics/ShaderProgram.h"
+ #include "lib/ogl.h"
+ #include "ps/CStrIntern.h"
+-#include "ps/GameSetup/Config.h"
++#include "ps/ScreenSize.h"
+ #include "renderer/Renderer.h"
+ 
+ CTextRenderer::CTextRenderer(const CShaderProgramPtr& shader) :
+@@ -37,8 +37,8 @@
+ 
+ void CTextRenderer::ResetTransform()
+ {
+-	float xres = g_xres / g_GuiScale;
+-	float yres = g_yres / g_GuiScale;
++	float xres = g_ScreenSize.GuiWidth();
++	float yres = g_ScreenSize.GuiHeight();
+ 
+ 	m_Transform.SetIdentity();
+ 	m_Transform.Scale(1.0f, -1.f, 1.0f);
+Index: source/gui/CDropDown.cpp
+===================================================================
+--- ./source/gui/CDropDown.cpp
++++ ./source/gui/CDropDown.cpp
+@@ -23,6 +23,7 @@
+ #include "lib/ogl.h"
+ #include "lib/timer.h"
+ #include "ps/CLogger.h"
++#include "ps/ScreenSize.h"
+ #include "soundmanager/ISoundManager.h"
+ 
+ CDropDown::CDropDown()
+@@ -391,10 +392,8 @@
+ 
+ void CDropDown::SetupListRect()
+ {
+-	extern int g_yres;
+-	extern float g_GuiScale;
+ 	float size, buffer, yres;
+-	yres = g_yres / g_GuiScale;
++	yres = g_ScreenSize.GuiHeight();
+ 	u32 minimumVisibleItems;
+ 	GUI<float>::GetSetting(this, "dropdown_size", size);
+ 	GUI<float>::GetSetting(this, "dropdown_buffer", buffer);
+Index: source/gui/CGUI.cpp
+===================================================================
+--- ./source/gui/CGUI.cpp
++++ ./source/gui/CGUI.cpp
+@@ -49,18 +49,16 @@
+ #include "lib/utf8.h"
+ #include "ps/CLogger.h"
+ #include "ps/Filesystem.h"
+-#include "ps/GameSetup/Config.h"
+ #include "ps/Globals.h"
+ #include "ps/Hotkey.h"
+ #include "ps/Profile.h"
+ #include "ps/Pyrogenesis.h"
++#include "ps/ScreenSize.h"
+ #include "ps/XML/Xeromyces.h"
+ #include "renderer/Renderer.h"
+ #include "scripting/ScriptFunctions.h"
+ #include "scriptinterface/ScriptInterface.h"
+ 
+-extern int g_yres;
+-
+ const double SELECT_DBLCLICK_RATE = 0.5;
+ const u32 MAX_OBJECT_DEPTH = 100; // Max number of nesting for GUI includes. Used to detect recursive inclusion
+ 
+@@ -93,7 +91,8 @@
+ 		// Yes the mouse position is stored as float to avoid
+ 		//  constant conversions when operating in a
+ 		//  float-based environment.
+-		m_MousePos = CPos((float)ev->ev.motion.x / g_GuiScale, (float)ev->ev.motion.y / g_GuiScale);
++		m_MousePos = CPos((float)ev->ev.motion.x * g_ScreenSize.ScreenScale() / g_ScreenSize.GuiScale(),
++		                  (float)ev->ev.motion.y * g_ScreenSize.ScreenScale() / g_ScreenSize.GuiScale());
+ 
+ 		SGUIMessage msg(GUIM_MOUSE_MOTION);
+ 		GUI<SGUIMessage>::RecurseObject(GUIRR_HIDDEN | GUIRR_GHOST, m_BaseObject,
+@@ -119,9 +118,8 @@
+ 	// Update m_MousePos (for delayed mouse button events)
+ 	CPos oldMousePos = m_MousePos;
+ 	if (ev->ev.type == SDL_MOUSEBUTTONDOWN || ev->ev.type == SDL_MOUSEBUTTONUP)
+-	{
+-		m_MousePos = CPos((float)ev->ev.button.x / g_GuiScale, (float)ev->ev.button.y / g_GuiScale);
+-	}
++		m_MousePos = CPos((float)ev->ev.motion.x * g_ScreenSize.ScreenScale() / g_ScreenSize.GuiScale(),
++		                  (float)ev->ev.motion.y * g_ScreenSize.ScreenScale() / g_ScreenSize.GuiScale());
+ 
+ 	// Only one object can be hovered
+ 	IGUIObject* pNearest = NULL;
+@@ -834,10 +832,10 @@
+ 	{
+ 		glEnable(GL_SCISSOR_TEST);
+ 		glScissor(
+-			clipping.left * g_GuiScale,
+-			g_yres - clipping.bottom * g_GuiScale,
+-			clipping.GetWidth() * g_GuiScale,
+-			clipping.GetHeight() * g_GuiScale);
++			clipping.left * g_ScreenSize.GuiScale(),
++			g_ScreenSize.ScreenHeight() - clipping.bottom * g_ScreenSize.GuiScale(),
++			clipping.GetWidth() * g_ScreenSize.GuiScale(),
++			clipping.GetHeight() * g_ScreenSize.GuiScale());
+ 	}
+ 
+ 	CTextRenderer textRenderer(tech->GetShader());
+Index: source/gui/CInput.cpp
+===================================================================
+--- ./source/gui/CInput.cpp
++++ ./source/gui/CInput.cpp
+@@ -31,15 +31,13 @@
+ #include "lib/utf8.h"
+ #include "ps/CLogger.h"
+ #include "ps/ConfigDB.h"
+-#include "ps/GameSetup/Config.h"
+ #include "ps/Globals.h"
+ #include "ps/Hotkey.h"
++#include "ps/ScreenSize.h"
+ #include "renderer/Renderer.h"
+ 
+ #include <sstream>
+ 
+-extern int g_yres;
+-
+ CInput::CInput()
+ 	: m_iBufferPos(-1), m_iBufferPos_Tail(-1), m_SelectingText(false), m_HorizontalScroll(0.f),
+ 	m_PrevTime(0.0), m_CursorVisState(true), m_CursorBlinkRate(0.5), m_ComposingText(false),
+@@ -1235,10 +1233,10 @@
+ 	{
+ 		glEnable(GL_SCISSOR_TEST);
+ 		glScissor(
+-			cliparea.left * g_GuiScale,
+-			g_yres - cliparea.bottom * g_GuiScale,
+-			cliparea.GetWidth() * g_GuiScale,
+-			cliparea.GetHeight() * g_GuiScale);
++			cliparea.left * g_ScreenSize.GuiScale(),
++			g_ScreenSize.ScreenHeight() - cliparea.bottom * g_ScreenSize.GuiScale(),
++			cliparea.GetWidth() * g_ScreenSize.GuiScale(),
++			cliparea.GetHeight() * g_ScreenSize.GuiScale());
+ 	}
+ 
+ 	// These are useful later.
+Index: source/gui/CTooltip.cpp
+===================================================================
+--- ./source/gui/CTooltip.cpp
++++ ./source/gui/CTooltip.cpp
+@@ -19,6 +19,7 @@
+ 
+ #include "CTooltip.h"
+ #include "CGUI.h"
++#include "ps/ScreenSize.h"
+ 
+ #include <algorithm>
+ 
+@@ -124,10 +125,8 @@
+ 
+ 	// Reposition the tooltip if it's falling off the screen:
+ 
+-	extern int g_xres, g_yres;
+-	extern float g_GuiScale;
+-	float screenw = g_xres / g_GuiScale;
+-	float screenh = g_yres / g_GuiScale;
++	float screenw = g_ScreenSize.GuiWidth();
++	float screenh = g_ScreenSize.GuiHeight();
+ 
+ 	if (size.pixel.top < 0.f)
+ 		size.pixel.bottom -= size.pixel.top, size.pixel.top = 0.f;
+Index: source/gui/GUIManager.cpp
+===================================================================
+--- ./source/gui/GUIManager.cpp
++++ ./source/gui/GUIManager.cpp
+@@ -25,6 +25,7 @@
+ #include "ps/Filesystem.h"
+ #include "ps/CLogger.h"
+ #include "ps/Profile.h"
++#include "ps/ScreenSize.h"
+ #include "ps/XML/Xeromyces.h"
+ #include "ps/GameSetup/Config.h"
+ #include "scriptinterface/ScriptInterface.h"
+@@ -376,6 +377,8 @@
+ {
+ 	PROFILE3_GPU("gui");
+ 
++	glViewport((GLint)0, (GLint)0,(GLsizei)g_ScreenSize.ScreenWidth(),(GLsizei)g_ScreenSize.ScreenHeight());
++
+ 	for (const SGUIPage& p : m_PageStack)
+ 		p.gui->Draw();
+ }
+Index: source/gui/GUIutil.cpp
+===================================================================
+--- ./source/gui/GUIutil.cpp
++++ ./source/gui/GUIutil.cpp
+@@ -22,9 +22,7 @@
+ 
+ #include "maths/Matrix3D.h"
+ #include "ps/CLogger.h"
+-#include "ps/GameSetup/Config.h"
+-
+-extern int g_xres, g_yres;
++#include "ps/ScreenSize.h"
+ 
+ template <>
+ bool __ParseString<bool>(const CStrW& Value, bool& Output)
+@@ -270,8 +268,8 @@
+ 
+ CMatrix3D GetDefaultGuiMatrix()
+ {
+-	float xres = g_xres / g_GuiScale;
+-	float yres = g_yres / g_GuiScale;
++	float xres = g_ScreenSize.GuiWidth();
++	float yres = g_ScreenSize.GuiHeight();
+ 
+ 	CMatrix3D m;
+ 	m.SetIdentity();
+Index: source/gui/IGUIObject.cpp
+===================================================================
+--- ./source/gui/IGUIObject.cpp
++++ ./source/gui/IGUIObject.cpp
+@@ -22,9 +22,9 @@
+ #include "gui/scripting/JSInterface_GUITypes.h"
+ #include "gui/scripting/JSInterface_IGUIObject.h"
+ 
+-#include "ps/GameSetup/Config.h"
+ #include "ps/CLogger.h"
+ #include "ps/Profile.h"
++#include "ps/ScreenSize.h"
+ #include "scriptinterface/ScriptInterface.h"
+ 
+ 
+@@ -313,7 +313,7 @@
+ 	if (absolute == false && m_pParent && !IsRootObject())
+ 		m_CachedActualSize = ca.GetClientArea(m_pParent->m_CachedActualSize);
+ 	else
+-		m_CachedActualSize = ca.GetClientArea(CRect(0.f, 0.f, g_xres / g_GuiScale, g_yres / g_GuiScale));
++		m_CachedActualSize = ca.GetClientArea(CRect(0.f, 0.f, g_ScreenSize.GuiWidth(), g_ScreenSize.GuiHeight()));
+ 
+ 	// In a few cases, GUI objects have to resize to fill the screen
+ 	// but maintain a constant aspect ratio.
+Index: source/gui/MiniMap.cpp
+===================================================================
+--- ./source/gui/MiniMap.cpp
++++ ./source/gui/MiniMap.cpp
+@@ -37,8 +37,8 @@
+ #include "ps/ConfigDB.h"
+ #include "ps/Filesystem.h"
+ #include "ps/Game.h"
+-#include "ps/GameSetup/Config.h"
+ #include "ps/Profile.h"
++#include "ps/ScreenSize.h"
+ #include "ps/World.h"
+ #include "ps/XML/Xeromyces.h"
+ #include "renderer/Renderer.h"
+@@ -261,9 +261,9 @@
+ 	const float invTileMapSize = 1.0f / float(TERRAIN_TILE_SIZE * m_MapSize);
+ 
+ 	CVector3D hitPt[4];
+-	hitPt[0] = m_Camera->GetWorldCoordinates(0, g_Renderer.GetHeight(), h);
+-	hitPt[1] = m_Camera->GetWorldCoordinates(g_Renderer.GetWidth(), g_Renderer.GetHeight(), h);
+-	hitPt[2] = m_Camera->GetWorldCoordinates(g_Renderer.GetWidth(), 0, h);
++	hitPt[0] = m_Camera->GetWorldCoordinates(0, g_ScreenSize.LogicalHeight(), h);
++	hitPt[1] = m_Camera->GetWorldCoordinates(g_ScreenSize.LogicalWidth(), g_ScreenSize.LogicalHeight(), h);
++	hitPt[2] = m_Camera->GetWorldCoordinates(g_ScreenSize.LogicalWidth(), 0, h);
+ 	hitPt[3] = m_Camera->GetWorldCoordinates(0, 0, h);
+ 
+ 	float ViewRect[4][2];
+@@ -283,10 +283,10 @@
+ 
+ 	// Enable Scissoring to restrict the rectangle to only the minimap.
+ 	glScissor(
+-		m_CachedActualSize.left * g_GuiScale,
+-		g_Renderer.GetHeight() - m_CachedActualSize.bottom * g_GuiScale,
+-		width * g_GuiScale,
+-		height * g_GuiScale);
++		m_CachedActualSize.left * g_ScreenSize.GuiScale(),
++		g_Renderer.GetHeight() - m_CachedActualSize.bottom * g_ScreenSize.GuiScale(),
++		width * g_ScreenSize.GuiScale(),
++		height * g_ScreenSize.GuiScale());
+ 	glEnable(GL_SCISSOR_TEST);
+ 	glLineWidth(2.0f);
+ 
+Index: source/gui/scripting/GuiScriptConversions.cpp
+===================================================================
+--- ./source/gui/scripting/GuiScriptConversions.cpp
++++ ./source/gui/scripting/GuiScriptConversions.cpp
+@@ -22,6 +22,7 @@
+ #include "gui/IGUIObject.h"
+ #include "lib/external_libraries/libsdl.h"
+ #include "ps/Hotkey.h"
++#include "ps/ScreenSize.h"
+ #include "maths/Vector2D.h"
+ 
+ #define SET(obj, name, value) STMT(JS::RootedValue v_(cx); AssignOrToJSVal(cx, &v_, (value)); JS_SetProperty(cx, obj, (name), v_))
+Index: source/lib/res/graphics/cursor.h
+===================================================================
+--- ./source/lib/res/graphics/cursor.h
++++ ./source/lib/res/graphics/cursor.h
+@@ -38,7 +38,7 @@
+  *		  (the origin is convenient for drawing via OpenGL, but requires the
+  *		  mouse Y coordinate to be subtracted from the client area height.
+  *		  Making the caller responsible for this avoids a dependency on
+- *		  the g_yres global variable.)
++ *		  the g_ScreenSize global variable.)
+  * @param scale Scale factor for drawing size the cursor.
+  * @param forceGL Require the OpenGL cursor implementation, not hardware cursor
+  *
+Index: source/lib/sysdep/arch/x86_x64/topology.cpp
+===================================================================
+--- ./source/lib/sysdep/arch/x86_x64/topology.cpp
++++ ./source/lib/sysdep/arch/x86_x64/topology.cpp
+@@ -159,17 +159,17 @@
+ 	const size_t maxCoresPerPackage = MaxCoresPerPackage();
+ 	const size_t maxPackages = 256;	// "enough"
+ 
+-	const size_t logicalWidth = ceil_log2(maxLogicalPerCore);
++	const size_t LogicalWidth = ceil_log2(maxLogicalPerCore);
+ 	const size_t coreWidth    = ceil_log2(maxCoresPerPackage);
+ 	const size_t packageWidth = ceil_log2(maxPackages);
+ 
+-	cpuTopology.logical.mask = bit_mask<size_t>(logicalWidth);
++	cpuTopology.logical.mask = bit_mask<size_t>(LogicalWidth);
+ 	cpuTopology.core.mask    = bit_mask<size_t>(coreWidth);
+ 	cpuTopology.package.mask = bit_mask<size_t>(packageWidth);
+ 
+ 	cpuTopology.logical.shift = 0;
+-	cpuTopology.core.shift    = logicalWidth;
+-	cpuTopology.package.shift = logicalWidth + coreWidth;
++	cpuTopology.core.shift    = LogicalWidth;
++	cpuTopology.package.shift = LogicalWidth + coreWidth;
+ 
+ 	if(AreApicIdsReliable())
+ 	{
+Index: source/ps/CConsole.h
+===================================================================
+--- ./source/ps/CConsole.h
++++ ./source/ps/CConsole.h
+@@ -56,7 +56,7 @@
+ 	~CConsole();
+ 
+ 	void SetSize(float X = 300, float Y = 0, float W = 800, float H = 600);
+-	void UpdateScreenSize(int w, int h);
++	void UpdateScreenSize();
+ 
+ 	void ToggleVisible();
+ 	void SetVisible(bool visible);
+Index: source/ps/CConsole.cpp
+===================================================================
+--- ./source/ps/CConsole.cpp
++++ ./source/ps/CConsole.cpp
+@@ -38,11 +38,11 @@
+ #include "network/NetServer.h"
+ #include "ps/CLogger.h"
+ #include "ps/Filesystem.h"
+-#include "ps/GameSetup/Config.h"
+ #include "ps/Globals.h"
+ #include "ps/Hotkey.h"
+ #include "ps/Profile.h"
+ #include "ps/Pyrogenesis.h"
++#include "ps/ScreenSize.h"
+ #include "renderer/Renderer.h"
+ #include "scriptinterface/ScriptInterface.h"
+ 
+@@ -83,10 +83,9 @@
+ 	m_fHeight = H;
+ }
+ 
+-void CConsole::UpdateScreenSize(int w, int h)
++void CConsole::UpdateScreenSize()
+ {
+-	float height = h * 0.6f;
+-	SetSize(0, 0, w / g_GuiScale, height / g_GuiScale);
++	SetSize(0, 0, g_ScreenSize.GuiWidth(), g_ScreenSize.GuiHeight() * 0.6f);
+ }
+ 
+ 
+Index: source/ps/GameSetup/Config.h
+===================================================================
+--- ./source/ps/GameSetup/Config.h
++++ ./source/ps/GameSetup/Config.h
+@@ -86,8 +86,6 @@
+ // the render path that is actually in use right now)
+ extern CStr g_RenderPath;
+ 
+-extern int g_xres, g_yres;
+-extern float g_GuiScale;
+ extern bool g_VSync;
+ 
+ extern bool g_Quickstart;
+Index: source/ps/GameSetup/Config.cpp
+===================================================================
+--- ./source/ps/GameSetup/Config.cpp
++++ ./source/ps/GameSetup/Config.cpp
+@@ -24,6 +24,7 @@
+ #include "ps/CLogger.h"
+ #include "ps/ConfigDB.h"
+ #include "ps/GameSetup/CmdLineArgs.h"
++#include "ps/ScreenSize.h"
+ 
+ // (these variables are documented in the header.)
+ 
+@@ -62,8 +63,6 @@
+ 
+ CStr g_RenderPath = "default";
+ 
+-int g_xres, g_yres;
+-float g_GuiScale = 1.0f;
+ bool g_VSync = false;
+ 
+ bool g_Quickstart = false;
+@@ -112,7 +111,11 @@
+ 	CFG_GET_VAL("preferglsl", g_PreferGLSL);
+ 	CFG_GET_VAL("postproc", g_PostProc);
+ 	CFG_GET_VAL("smoothlos", g_SmoothLOS);
+-	CFG_GET_VAL("gui.scale", g_GuiScale);
++	float scale;
++	CFG_GET_VAL("gui.scale", scale);
++	g_ScreenSize.SetGuiScale(scale);
++	CFG_GET_VAL("renderer.resolution", scale);
++	g_ScreenSize.SetRendererScale(1.0f / scale);
+ }
+ 
+ 
+Index: source/ps/GameSetup/GameSetup.h
+===================================================================
+--- ./source/ps/GameSetup/GameSetup.h
++++ ./source/ps/GameSetup/GameSetup.h
+@@ -18,6 +18,8 @@
+ #ifndef INCLUDED_GAMESETUP
+ #define INCLUDED_GAMESETUP
+ 
++class CStr;
++
+ //
+ // GUI integration
+ //
+Index: source/ps/GameSetup/GameSetup.cpp
+===================================================================
+--- ./source/ps/GameSetup/GameSetup.cpp
++++ ./source/ps/GameSetup/GameSetup.cpp
+@@ -66,6 +66,7 @@
+ #include "ps/ProfileViewer.h"
+ #include "ps/Profiler2.h"
+ #include "ps/Pyrogenesis.h"	// psSetLogDir
++#include "ps/ScreenSize.h"
+ #include "ps/scripting/JSInterface_Console.h"
+ #include "ps/TouchInput.h"
+ #include "ps/UserReport.h"
+@@ -272,7 +273,7 @@
+ 		CStrW cursorName = g_CursorName;
+ 		if (cursorName.empty())
+ 		{
+-			cursor_draw(g_VFS, NULL, g_mouse_x, g_yres-g_mouse_y, g_GuiScale, false);
++			cursor_draw(g_VFS, NULL, g_mouse_x, g_ScreenSize.LogicalHeight()-g_mouse_y, g_ScreenSize.GuiScale() / g_ScreenSize.ScreenScale(), false);
+ 		}
+ 		else
+ 		{
+@@ -290,14 +291,14 @@
+ 			glPushMatrix();
+ 			glLoadIdentity();
+ 			CMatrix3D transform;
+-			transform.SetOrtho(0.f, (float)g_xres, 0.f, (float)g_yres, -1.f, 1000.f);
++			transform.SetOrtho(0.f, (float)g_ScreenSize.LogicalHeight(), 0.f, (float)g_ScreenSize.LogicalHeight(), -1.f, 1000.f);
+ 			glLoadMatrixf(&transform._11);
+ #endif
+ 
+ #if OS_ANDROID
+ #warning TODO: cursors for Android
+ #else
+-			if (cursor_draw(g_VFS, cursorName.c_str(), g_mouse_x, g_yres-g_mouse_y, g_GuiScale, forceGL) < 0)
++			if (cursor_draw(g_VFS, cursorName.c_str(), g_mouse_x, g_ScreenSize.LogicalHeight()-g_mouse_y, g_ScreenSize.GuiScale() / g_ScreenSize.ScreenScale(), forceGL) < 0)
+ 				LOGWARNING("Failed to draw cursor '%s'", utf8_from_wstring(cursorName));
+ #endif
+ 
+@@ -464,13 +465,13 @@
+ 		// console
+ 		TIMER(L"ps_console");
+ 
+-		g_Console->UpdateScreenSize(g_xres, g_yres);
++		g_Console->UpdateScreenSize();
+ 
+ 		// Calculate and store the line spacing
+ 		CFontMetrics font(CStrIntern(CONSOLE_FONT));
+ 		g_Console->m_iFontHeight = font.GetLineSpacing();
+ 		g_Console->m_iFontWidth = font.GetCharacterWidth(L'C');
+-		g_Console->m_charsPerPage = (size_t)(g_xres / g_Console->m_iFontWidth);
++		g_Console->m_charsPerPage = (size_t)(g_ScreenSize.GuiWidth() / g_Console->m_iFontWidth);
+ 		// Offset by an arbitrary amount, to make it fit more nicely
+ 		g_Console->m_iFontOffset = 7;
+ 
+@@ -562,7 +563,7 @@
+ 	UnloadHotkeys();
+ 
+ 	// disable the special Windows cursor, or free textures for OGL cursors
+-	cursor_draw(g_VFS, 0, g_mouse_x, g_yres-g_mouse_y, 1.0, false);
++	cursor_draw(g_VFS, 0, g_mouse_x, g_ScreenSize.LogicalHeight()-g_mouse_y, 1.0, false);
+ }
+ 
+ 
+@@ -618,7 +619,7 @@
+ 	// create terrain related stuff
+ 	new CTerrainTextureManager;
+ 
+-	g_Renderer.Open(g_xres, g_yres);
++	g_Renderer.Open(g_ScreenSize.RendererWidth(), g_ScreenSize.RendererHeight());
+ 
+ 	// Setup lighting environment. Since the Renderer accesses the
+ 	// lighting environment through a pointer, this has to be done before
+@@ -630,8 +631,8 @@
+ 	SViewPort vp;
+ 	vp.m_X = 0;
+ 	vp.m_Y = 0;
+-	vp.m_Width = g_xres;
+-	vp.m_Height = g_yres;
++	vp.m_Width = g_ScreenSize.RendererWidth();
++	vp.m_Height = g_ScreenSize.RendererHeight();
+ 	g_Renderer.SetViewport(vp);
+ 
+ 	ColorActivateFastImpl();
+Index: source/ps/ProfileViewer.cpp
+===================================================================
+--- ./source/ps/ProfileViewer.cpp
++++ ./source/ps/ProfileViewer.cpp
+@@ -35,12 +35,11 @@
+ #include "ps/Filesystem.h"
+ #include "ps/Hotkey.h"
+ #include "ps/Profile.h"
++#include "ps/ScreenSize.h"
+ #include "lib/external_libraries/libsdl.h"
+ #include "renderer/Renderer.h"
+ #include "scriptinterface/ScriptInterface.h"
+ 
+-extern int g_xres, g_yres;
+-
+ struct CProfileViewerInternals
+ {
+ 	NONCOPYABLE(CProfileViewerInternals); // because of the ofstream
+Index: source/ps/ScreenSize.h
+===================================================================
+--- .//dev/null
++++ ./source/ps/ScreenSize.h
+@@ -0,0 +1,55 @@
++/* Copyright (C) 2019 Wildfire Games.
++ * This file is part of 0 A.D.
++ *
++ * 0 A.D. is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * 0 A.D. is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with 0 A.D.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#ifndef INCLUDED_SCREENSIZE
++#define INCLUDED_SCREENSIZE
++
++class CScreenSize
++{
++public:
++	void SetSize(int width, int height);
++
++	void SetDPIScale(float scale);
++	void SetGuiScale(float scale);
++	void SetRendererScale(float scale);
++
++	int LogicalWidth();
++	int LogicalHeight();
++
++	float ScreenScale();
++	int ScreenWidth();
++	int ScreenHeight();
++
++	float GuiScale();
++	int GuiWidth();
++	int GuiHeight();
++
++	float RendererScale();
++	int RendererWidth();
++	int RendererHeight();
++private:
++	int m_LogicalWidth;
++	int m_LogicalHeight;
++
++	float m_DPIScale = 1.0f;
++	float m_GuiScale = 1.0f;
++	float m_RendererScale = 1.0f;
++};
++
++extern CScreenSize g_ScreenSize;
++
++#endif // INCLUDED_SCREENSIZE
+Index: source/ps/ScreenSize.cpp
+===================================================================
+--- .//dev/null
++++ ./source/ps/ScreenSize.cpp
+@@ -0,0 +1,102 @@
++/* Copyright (C) 2019 Wildfire Games.
++ * This file is part of 0 A.D.
++ *
++ * 0 A.D. is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * 0 A.D. is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with 0 A.D.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include "precompiled.h"
++
++#include "ScreenSize.h"
++
++#include "renderer/Renderer.h"
++
++CScreenSize g_ScreenSize;
++
++void CScreenSize::SetSize(int width, int height)
++{
++	m_LogicalWidth = width;
++	m_LogicalHeight = height;
++}
++
++void CScreenSize::SetGuiScale(float scale)
++{
++	m_GuiScale = scale;
++};
++
++void CScreenSize::SetDPIScale(float scale)
++{
++	m_DPIScale = scale;
++};
++
++void CScreenSize::SetRendererScale(float scale)
++{
++	m_RendererScale = scale;
++};
++
++int CScreenSize::LogicalWidth()
++{
++	return m_LogicalWidth;
++};
++
++int CScreenSize::LogicalHeight()
++{
++	return m_LogicalHeight;
++};
++
++float CScreenSize::ScreenScale()
++{
++	return m_DPIScale;
++};
++
++int CScreenSize::ScreenWidth()
++{
++	return m_LogicalWidth * m_DPIScale;
++};
++
++int CScreenSize::ScreenHeight()
++{
++	return m_LogicalHeight * m_DPIScale;
++};
++
++float CScreenSize::GuiScale()
++{
++	// The GUI is scaled up automatically on high-DPI screens
++	return m_GuiScale * m_DPIScale;
++};
++
++int CScreenSize::GuiWidth()
++{
++	return ScreenWidth() / GuiScale();
++};
++
++int CScreenSize::GuiHeight()
++{
++	return ScreenHeight() / GuiScale();
++};
++
++float CScreenSize::RendererScale()
++{
++	// We only support scaling the renderer if we print to framebuffers, i.e. use the post-processor.
++	return g_Renderer.m_Options.m_Postproc ? m_RendererScale : 1.0f / m_DPIScale;
++};
++
++int CScreenSize::RendererWidth()
++{
++	return LogicalWidth() / RendererScale();
++};
++
++int CScreenSize::RendererHeight()
++{
++	return LogicalHeight() / RendererScale();
++};
+Index: source/ps/TouchInput.cpp
+===================================================================
+--- ./source/ps/TouchInput.cpp
++++ ./source/ps/TouchInput.cpp
+@@ -26,6 +26,7 @@
+ #include "lib/timer.h"
+ #include "lib/external_libraries/libsdl.h"
+ #include "ps/Game.h"
++#include "ps/ScreenSize.h"
+ 
+ // When emulation is enabled:
+ // Left-click to put finger 0 down.
+@@ -34,8 +35,6 @@
+ // Same with right-click for finger 1.
+ #define EMULATE_FINGERS_WITH_MOUSE 0
+ 
+-extern int g_xres, g_yres;
+-
+ // NOTE: All this code is currently just a basic prototype for testing;
+ // it might need significant redesigning for proper usage.
+ 
+@@ -276,11 +275,11 @@
+ 			ev->ev.tfinger.x, ev->ev.tfinger.y, ev->ev.tfinger.dx, ev->ev.tfinger.dy, ev->ev.tfinger.pressure);
+ 
+ 		if (ev->ev.type == SDL_FINGERDOWN)
+-			OnFingerDown(ev->ev.tfinger.fingerId, g_xres * ev->ev.tfinger.x, g_yres * ev->ev.tfinger.y);
++			OnFingerDown(ev->ev.tfinger.fingerId, g_ScreenSize.LogicalWidth() * ev->ev.tfinger.x, g_ScreenSize.LogicalHeight() * ev->ev.tfinger.y);
+ 		else if (ev->ev.type == SDL_FINGERUP)
+-			OnFingerUp(ev->ev.tfinger.fingerId, g_xres * ev->ev.tfinger.x, g_yres * ev->ev.tfinger.y);
++			OnFingerUp(ev->ev.tfinger.fingerId, g_ScreenSize.LogicalWidth() * ev->ev.tfinger.x, g_ScreenSize.LogicalHeight() * ev->ev.tfinger.y);
+ 		else if (ev->ev.type == SDL_FINGERMOTION)
+-			OnFingerMotion(ev->ev.tfinger.fingerId, g_xres * ev->ev.tfinger.x, g_yres * ev->ev.tfinger.y);
++			OnFingerMotion(ev->ev.tfinger.fingerId, g_ScreenSize.LogicalWidth() * ev->ev.tfinger.x, g_ScreenSize.LogicalHeight() * ev->ev.tfinger.y);
+ 		return IN_HANDLED;
+ 	}
+ 	}
+Index: source/ps/Util.cpp
+===================================================================
+--- ./source/ps/Util.cpp
++++ ./source/ps/Util.cpp
+@@ -38,11 +38,11 @@
+ #include "i18n/L10n.h"
+ #include "lib/utf8.h"
+ 
+-#include "ps/GameSetup/Config.h"
+ #include "ps/GameSetup/GameSetup.h"
+ #include "ps/Game.h"
+ #include "ps/CLogger.h"
+ #include "ps/Filesystem.h"
++#include "ps/ScreenSize.h"
+ #include "ps/VideoMode.h"
+ #include "renderer/Renderer.h"
+ #include "maths/MathUtil.h"
+@@ -242,7 +242,7 @@
+ 	VfsPath filename;
+ 	vfs::NextNumberedFilename(g_VFS, filenameFormat, s_nextScreenshotNumber, filename);
+ 
+-	const size_t w = (size_t)g_xres, h = (size_t)g_yres;
++	const size_t w = (size_t)g_ScreenSize.ScreenWidth(), h = (size_t)g_ScreenSize.ScreenHeight();
+ 	const size_t bpp = 24;
+ 	GLenum fmt = GL_RGB;
+ 	int flags = TEX_BOTTOM_UP;
+@@ -304,7 +304,7 @@
+ 	// Slightly ugly and inflexible: Always draw 640*480 tiles onto the screen, and
+ 	// hope the screen is actually large enough for that.
+ 	const int tile_w = 640, tile_h = 480;
+-	ENSURE(g_xres >= tile_w && g_yres >= tile_h);
++	ENSURE(g_ScreenSize.ScreenWidth() >= tile_w && g_ScreenSize.ScreenHeight() >= tile_h);
+ 
+ 	const int img_w = tile_w*tiles, img_h = tile_h*tiles;
+ 	const int bpp = 24;
+@@ -402,8 +402,8 @@
+ 
+ 	// Restore the viewport settings
+ 	{
+-		g_Renderer.Resize(g_xres, g_yres);
+-		SViewPort vp = { 0, 0, g_xres, g_yres };
++		g_Renderer.Resize(g_ScreenSize.ScreenWidth(), g_ScreenSize.ScreenHeight());
++		SViewPort vp = { 0, 0, g_ScreenSize.ScreenWidth(), g_ScreenSize.ScreenHeight() };
+ 		g_Game->GetView()->GetCamera()->SetViewPort(vp);
+ 		g_Game->GetView()->SetCameraProjection();
+ 		g_Game->GetView()->GetCamera()->SetProjectionTile(1, 0, 0);
+Index: source/ps/VideoMode.h
+===================================================================
+--- ./source/ps/VideoMode.h
++++ ./source/ps/VideoMode.h
+@@ -72,7 +72,7 @@
+ 	 * This should be called after the GL context has been resized.
+ 	 * This can also be used when the GL context is managed externally, not via SDL.
+ 	 */
+-	static void UpdateRenderer(int w, int h);
++	static void UpdateRenderer();
+ 
+ 	int GetXRes();
+ 	int GetYRes();
+@@ -90,7 +90,7 @@
+ private:
+ 	void ReadConfig();
+ 	int GetBestBPP();
+-	bool SetVideoMode(int w, int h, int bpp, bool fullscreen);
++	bool SetVideoMode(int bpp, bool fullscreen);
+ 	void EnableS3TC();
+ 
+ 	/**
+@@ -113,6 +113,7 @@
+ 	int m_ConfigH;
+ 	int m_ConfigBPP;
+ 	int m_ConfigDisplay;
++	bool m_ConfigEnableHighDPI;
+ 	bool m_ConfigFullscreen;
+ 	bool m_ConfigForceS3TCEnable;
+ 
+@@ -127,8 +128,6 @@
+ 	bool m_IsFullscreen;
+ 
+ 	// The last mode selected
+-	int m_CurrentW;
+-	int m_CurrentH;
+ 	int m_CurrentBPP;
+ };
+ 
+Index: source/ps/VideoMode.cpp
+===================================================================
+--- ./source/ps/VideoMode.cpp
++++ ./source/ps/VideoMode.cpp
+@@ -32,6 +32,7 @@
+ #include "ps/ConfigDB.h"
+ #include "ps/Filesystem.h"
+ #include "ps/Game.h"
++#include "ps/ScreenSize.h"
+ #include "ps/GameSetup/Config.h"
+ #include "renderer/Renderer.h"
+ 
+@@ -68,10 +69,11 @@
+ 	CFG_GET_VAL("yres", m_ConfigH);
+ 	CFG_GET_VAL("bpp", m_ConfigBPP);
+ 	CFG_GET_VAL("display", m_ConfigDisplay);
++	CFG_GET_VAL("highdpi", m_ConfigEnableHighDPI);
+ 	CFG_GET_VAL("force_s3tc_enable", m_ConfigForceS3TCEnable);
+ }
+ 
+-bool CVideoMode::SetVideoMode(int w, int h, int bpp, bool fullscreen)
++bool CVideoMode::SetVideoMode(int bpp, bool fullscreen)
+ {
+ 	Uint32 flags = 0;
+ 	if (fullscreen)
+@@ -81,9 +83,11 @@
+ 	{
+ 		// Note: these flags only take affect in SDL_CreateWindow
+ 		flags |= SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
++		if (m_ConfigEnableHighDPI)
++			flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+ 		m_WindowedX = m_WindowedY = SDL_WINDOWPOS_CENTERED_DISPLAY(m_ConfigDisplay);
+ 
+-		m_Window = SDL_CreateWindow("0 A.D.", m_WindowedX, m_WindowedY, w, h, flags);
++		m_Window = SDL_CreateWindow("0 A.D.", m_WindowedX, m_WindowedY, g_ScreenSize.LogicalWidth(), g_ScreenSize.LogicalHeight(), flags);
+ 		if (!m_Window)
+ 		{
+ 			// If fullscreen fails, try windowed mode
+@@ -91,15 +95,16 @@
+ 			{
+ 				LOGWARNING("Failed to set the video mode to fullscreen for the chosen resolution "
+ 					"%dx%d:%d (\"%hs\"), falling back to windowed mode",
+-					w, h, bpp, SDL_GetError());
++					g_ScreenSize.LogicalWidth(), g_ScreenSize.LogicalHeight(), bpp, SDL_GetError());
+ 				// Using default size for the window for now, as the attempted setting
+ 				// could be as large, or larger than the screen size.
+-				return SetVideoMode(DEFAULT_WINDOW_W, DEFAULT_WINDOW_H, bpp, false);
++				g_ScreenSize.SetSize(DEFAULT_WINDOW_W, DEFAULT_WINDOW_H);
++				return SetVideoMode(bpp, false);
+ 			}
+ 			else
+ 			{
+ 				LOGERROR("SetVideoMode failed in SDL_CreateWindow: %dx%d:%d %d (\"%s\")",
+-					w, h, bpp, fullscreen ? 1 : 0, SDL_GetError());
++					g_ScreenSize.LogicalWidth(), g_ScreenSize.LogicalHeight(), bpp, fullscreen ? 1 : 0, SDL_GetError());
+ 				return false;
+ 			}
+ 		}
+@@ -107,7 +112,7 @@
+ 		if (SDL_SetWindowDisplayMode(m_Window, NULL) < 0)
+ 		{
+ 			LOGERROR("SetVideoMode failed in SDL_SetWindowDisplayMode: %dx%d:%d %d (\"%s\")",
+-				w, h, bpp, fullscreen ? 1 : 0, SDL_GetError());
++				g_ScreenSize.LogicalWidth(), g_ScreenSize.LogicalHeight(), bpp, fullscreen ? 1 : 0, SDL_GetError());
+ 			return false;
+ 		}
+ 
+@@ -115,7 +120,7 @@
+ 		if (!context)
+ 		{
+ 			LOGERROR("SetVideoMode failed in SDL_GL_CreateContext: %dx%d:%d %d (\"%s\")",
+-				w, h, bpp, fullscreen ? 1 : 0, SDL_GetError());
++				g_ScreenSize.LogicalWidth(), g_ScreenSize.LogicalHeight(), bpp, fullscreen ? 1 : 0, SDL_GetError());
+ 			return false;
+ 		}
+ 	}
+@@ -127,27 +132,30 @@
+ 			{
+ 				// For some reason, when switching from fullscreen to windowed mode,
+ 				// we have to set the window size and position before and after switching
+-				SDL_SetWindowSize(m_Window, w, h);
++				SDL_SetWindowSize(m_Window, g_ScreenSize.LogicalWidth(), g_ScreenSize.LogicalHeight());
+ 				SDL_SetWindowPosition(m_Window, m_WindowedX, m_WindowedY);
+ 			}
+ 
+ 			if (SDL_SetWindowFullscreen(m_Window, flags) < 0)
+ 			{
+ 				LOGERROR("SetVideoMode failed in SDL_SetWindowFullscreen: %dx%d:%d %d (\"%s\")",
+-					w, h, bpp, fullscreen ? 1 : 0, SDL_GetError());
++					g_ScreenSize.LogicalWidth(), g_ScreenSize.LogicalHeight(), bpp, fullscreen ? 1 : 0, SDL_GetError());
+ 				return false;
+ 			}
+ 		}
+ 
+ 		if (!fullscreen)
+ 		{
+-			SDL_SetWindowSize(m_Window, w, h);
++			SDL_SetWindowSize(m_Window, g_ScreenSize.LogicalWidth(), g_ScreenSize.LogicalHeight());
+ 			SDL_SetWindowPosition(m_Window, m_WindowedX, m_WindowedY);
+ 		}
+ 	}
+ 
++	int screen_w, screen_h;
++	SDL_GL_GetDrawableSize(m_Window, &screen_w, &screen_h);
++	g_ScreenSize.SetDPIScale(screen_w / g_ScreenSize.LogicalWidth());
++
+ 	// Grab the current video settings
+-	SDL_GetWindowSize(m_Window, &m_CurrentW, &m_CurrentH);
+ 	m_CurrentBPP = bpp;
+ 
+ 	if (fullscreen)
+@@ -157,9 +165,6 @@
+ 
+ 	m_IsFullscreen = fullscreen;
+ 
+-	g_xres = m_CurrentW;
+-	g_yres = m_CurrentH;
+-
+ 	return true;
+ }
+ 
+@@ -175,35 +180,26 @@
+ 	// (command line params may override these)
+ 	gfx::GetVideoMode(&m_PreferredW, &m_PreferredH, &m_PreferredBPP, &m_PreferredFreq);
+ 
+-	int w = m_ConfigW;
+-	int h = m_ConfigH;
++	g_ScreenSize.SetSize(m_ConfigW, m_ConfigH);
+ 
++	// If fullscreen, default to the desktop resolution.
+ 	if (m_ConfigFullscreen)
+-	{
+-		// If fullscreen and no explicit size set, default to the desktop resolution
+-		if (w == 0 || h == 0)
+-		{
+-			w = m_PreferredW;
+-			h = m_PreferredH;
+-		}
+-	}
++		g_ScreenSize.SetSize(m_PreferredW, m_PreferredH);
+ 
+ 	// If no size determined, default to something sensible
+-	if (w == 0 || h == 0)
+-	{
+-		w = DEFAULT_WINDOW_W;
+-		h = DEFAULT_WINDOW_H;
+-	}
++	if (g_ScreenSize.LogicalWidth() <= 2 || g_ScreenSize.LogicalHeight() <= 2)
++		g_ScreenSize.SetSize(DEFAULT_WINDOW_W, DEFAULT_WINDOW_H);
+ 
+ 	if (!m_ConfigFullscreen)
+ 	{
+ 		// Limit the window to the screen size (if known)
+ 		if (m_PreferredW)
+-			w = std::min(w, m_PreferredW);
++			g_ScreenSize.SetSize(std::min(g_ScreenSize.LogicalWidth(), m_PreferredW), g_ScreenSize.LogicalHeight());
+ 		if (m_PreferredH)
+-			h = std::min(h, m_PreferredH);
++			g_ScreenSize.SetSize(g_ScreenSize.LogicalWidth(), std::min(g_ScreenSize.LogicalHeight(), m_PreferredH));
+ 	}
+ 
++	printf("Current res = %i %i\n", g_ScreenSize.LogicalWidth(), g_ScreenSize.LogicalHeight());
+ 	int bpp = GetBestBPP();
+ 
+ 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+@@ -217,13 +213,13 @@
+ 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+ #endif
+ 
+-	if (!SetVideoMode(w, h, bpp, m_ConfigFullscreen))
++	if (!SetVideoMode(bpp, m_ConfigFullscreen))
+ 	{
+ 		// Fall back to a smaller depth buffer
+ 		// (The rendering may be ugly but this helps when running in VMware)
+ 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+ 
+-		if (!SetVideoMode(w, h, bpp, m_ConfigFullscreen))
++		if (!SetVideoMode(bpp, m_ConfigFullscreen))
+ 			return false;
+ 	}
+ 
+@@ -253,8 +249,8 @@
+ 
+ 	if (!m_ConfigFullscreen)
+ 	{
+-		m_WindowedW = w;
+-		m_WindowedH = h;
++		m_WindowedW = g_ScreenSize.LogicalWidth();
++		m_WindowedH = g_ScreenSize.LogicalHeight();
+ 	}
+ 
+ 	SetWindowIcon();
+@@ -323,14 +319,15 @@
+ 		return true;
+ 
+ 	int bpp = GetBestBPP();
++	g_ScreenSize.SetSize(w, h);
+ 
+-	if (!SetVideoMode(w, h, bpp, false))
++	if (!SetVideoMode(bpp, false))
+ 		return false;
+ 
+-	m_WindowedW = w;
+-	m_WindowedH = h;
++	m_WindowedW = g_ScreenSize.LogicalWidth();
++	m_WindowedH = g_ScreenSize.LogicalHeight();
+ 
+-	UpdateRenderer(w, h);
++	UpdateRenderer();
+ 
+ 	return true;
+ }
+@@ -348,49 +345,33 @@
+ 
+ 	if (!m_IsFullscreen)
+ 	{
+-		// Windowed -> fullscreen:
++		// Windowed -> fullscreen
++		g_ScreenSize.SetSize(m_PreferredW, m_PreferredH);
+ 
+-		int w = 0, h = 0;
+-
+-		// If a fullscreen size was configured, use that; else use the desktop size; else use a default
+-		if (m_ConfigFullscreen)
+-		{
+-			w = m_ConfigW;
+-			h = m_ConfigH;
+-		}
+-		if (w == 0 || h == 0)
+-		{
+-			w = m_PreferredW;
+-			h = m_PreferredH;
+-		}
+-		if (w == 0 || h == 0)
+-		{
+-			w = DEFAULT_FULLSCREEN_W;
+-			h = DEFAULT_FULLSCREEN_H;
+-		}
++		if (g_ScreenSize.LogicalWidth() <= 2 || g_ScreenSize.LogicalHeight() <= 2)
++			g_ScreenSize.SetSize(DEFAULT_FULLSCREEN_W, DEFAULT_FULLSCREEN_H);
+ 
+ 		int bpp = GetBestBPP();
+ 
+-		if (!SetVideoMode(w, h, bpp, fullscreen))
++		if (!SetVideoMode(bpp, fullscreen))
+ 			return false;
+ 
+-		UpdateRenderer(m_CurrentW, m_CurrentH);
++		UpdateRenderer();
+ 
+ 		return true;
+ 	}
+ 	else
+ 	{
+-		// Fullscreen -> windowed:
+-
++		// Fullscreen -> windowed
+ 		// Go back to whatever the previous window size was
+-		int w = m_WindowedW, h = m_WindowedH;
++		g_ScreenSize.SetSize(m_WindowedW, m_WindowedH);
+ 
+ 		int bpp = GetBestBPP();
+ 
+-		if (!SetVideoMode(w, h, bpp, fullscreen))
++		if (!SetVideoMode(bpp, fullscreen))
+ 			return false;
+ 
+-		UpdateRenderer(w, h);
++		UpdateRenderer();
+ 
+ 		return true;
+ 	}
+@@ -415,27 +396,21 @@
+ 	}
+ }
+ 
+-void CVideoMode::UpdateRenderer(int w, int h)
++void CVideoMode::UpdateRenderer()
+ {
+-	if (w < 2) w = 2; // avoid GL errors caused by invalid sizes
+-	if (h < 2) h = 2;
+-
+-	g_xres = w;
+-	g_yres = h;
+-
+-	SViewPort vp = { 0, 0, w, h };
++	SViewPort vp = { 0, 0, g_ScreenSize.RendererWidth(), g_ScreenSize.RendererHeight() };
+ 
+ 	if (CRenderer::IsInitialised())
+ 	{
+ 		g_Renderer.SetViewport(vp);
+-		g_Renderer.Resize(w, h);
++		g_Renderer.Resize(g_ScreenSize.RendererWidth(), g_ScreenSize.RendererHeight());
+ 	}
+ 
+ 	if (g_GUI)
+ 		g_GUI->UpdateResolution();
+ 
+ 	if (g_Console)
+-		g_Console->UpdateScreenSize(w, h);
++		g_Console->UpdateScreenSize();
+ 
+ 	if (g_Game)
+ 		g_Game->GetView()->SetViewport(vp);
+@@ -453,13 +428,13 @@
+ int CVideoMode::GetXRes()
+ {
+ 	ENSURE(m_IsInitialised);
+-	return m_CurrentW;
++	return g_ScreenSize.LogicalWidth();
+ }
+ 
+ int CVideoMode::GetYRes()
+ {
+ 	ENSURE(m_IsInitialised);
+-	return m_CurrentH;
++	return g_ScreenSize.LogicalHeight();
+ }
+ 
+ int CVideoMode::GetBPP()
+Index: source/renderer/PostprocManager.cpp
+===================================================================
+--- ./source/renderer/PostprocManager.cpp
++++ ./source/renderer/PostprocManager.cpp
+@@ -25,6 +25,7 @@
+ #include "ps/CLogger.h"
+ #include "ps/Filesystem.h"
+ #include "ps/Game.h"
++#include "ps/ScreenSize.h"
+ #include "ps/World.h"
+ 
+ #include "graphics/GameView.h"
+@@ -78,8 +79,8 @@
+ 		return;
+ 
+ 	// The screen size starts out correct and then must be updated with Resize()
+-	m_Width = g_Renderer.GetWidth();
+-	m_Height = g_Renderer.GetHeight();
++	m_Width = g_ScreenSize.RendererWidth();
++	m_Height = g_ScreenSize.RendererHeight();
+ 
+ 	RecreateBuffers();
+ 	m_IsInitialized = true;
+@@ -90,8 +91,8 @@
+ 
+ void CPostprocManager::Resize()
+ {
+-	m_Width = g_Renderer.GetWidth();
+-	m_Height = g_Renderer.GetHeight();
++	m_Width = g_ScreenSize.RendererWidth();
++	m_Height = g_ScreenSize.RendererHeight();
+ 
+ 	// If the buffers were intialized, recreate them to the new size.
+ 	if (m_IsInitialized)
+@@ -391,7 +392,7 @@
+ 		pglBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, m_PongFbo);
+ 
+ 	pglBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0);
+-	pglBlitFramebufferEXT(0, 0, m_Width, m_Height, 0, 0, m_Width, m_Height,
++	pglBlitFramebufferEXT(0, 0, m_Width, m_Height, 0, 0, g_ScreenSize.ScreenWidth(), g_ScreenSize.ScreenHeight(),
+ 			      GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+ 	pglBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, 0);
+ 
+Index: source/renderer/ShadowMap.cpp
+===================================================================
+--- ./source/renderer/ShadowMap.cpp
++++ ./source/renderer/ShadowMap.cpp
+@@ -27,6 +27,7 @@
+ #include "ps/CLogger.h"
+ #include "ps/ConfigDB.h"
+ #include "ps/Profile.h"
++#include "ps/ScreenSize.h"
+ 
+ #include "graphics/LightEnv.h"
+ #include "graphics/ShaderManager.h"
+@@ -595,7 +596,7 @@
+ 		pglBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m->SavedViewFBO);
+ 	}
+ 
+-	const SViewPort vp = { 0, 0, g_Renderer.GetWidth(), g_Renderer.GetHeight() };
++	const SViewPort vp = { 0, 0, g_ScreenSize.RendererWidth(), g_ScreenSize.RendererHeight() };
+ 	g_Renderer.SetViewport(vp);
+ 
+ 	glColorMask(1,1,1,1);
+Index: source/renderer/SilhouetteRenderer.cpp
+===================================================================
+--- ./source/renderer/SilhouetteRenderer.cpp
++++ ./source/renderer/SilhouetteRenderer.cpp
+@@ -26,13 +26,12 @@
+ #include "graphics/ShaderManager.h"
+ #include "maths/MathUtil.h"
+ #include "ps/Profile.h"
++#include "ps/ScreenSize.h"
+ #include "renderer/Renderer.h"
+ #include "renderer/Scene.h"
+ 
+ #include <cfloat>
+ 
+-extern int g_xres, g_yres;
+-
+ // For debugging
+ static const bool g_DisablePreciseIntersections = false;
+ 
+@@ -235,9 +234,9 @@
+ #if 0
+ 	// For debugging ray-patch intersections - casts a ton of rays and draws
+ 	// a sphere where they intersect
+-	for (int y = 0; y < g_yres; y += 8)
++	for (int y = 0; y < g_ScreenSize.LogicalHeight(); y += 8)
+ 	{
+-		for (int x = 0; x < g_xres; x += 8)
++		for (int x = 0; x < g_ScreenSize.LogicalWidth(); x += 8)
+ 		{
+ 			SOverlaySphere sphere;
+ 			sphere.m_Color = CColor(1, 0, 0, 1);
+@@ -461,7 +460,7 @@
+ 	CMatrix3D m;
+ 	m.SetIdentity();
+ 	m.Scale(1.0f, -1.f, 1.0f);
+-	m.Translate(0.0f, (float)g_yres, -1000.0f);
++	m.Translate(0.0f, (float)g_ScreenSize.ScreenHeight(), -1000.0f);
+ 
+ 	CMatrix3D proj;
+ 	proj.SetOrtho(0.f, g_MaxCoord, 0.f, g_MaxCoord, -1.f, 1000.f);
+Index: source/renderer/scripting/JSInterface_Renderer.cpp
+===================================================================
+--- ./source/renderer/scripting/JSInterface_Renderer.cpp
++++ ./source/renderer/scripting/JSInterface_Renderer.cpp
+@@ -20,7 +20,10 @@
+ #include "JSInterface_Renderer.h"
+ 
+ #include "graphics/TextureManager.h"
++#include "graphics/GameView.h"
++#include "ps/Game.h"
+ #include "ps/Profile.h"
++#include "ps/ScreenSize.h"
+ #include "renderer/Renderer.h"
+ #include "renderer/ShadowMap.h"
+ #include "scriptinterface/ScriptInterface.h"
+@@ -50,7 +53,6 @@
+ IMPLEMENT_BOOLEAN_SCRIPT_SETTING(SILHOUETTES, Silhouettes);
+ IMPLEMENT_BOOLEAN_SCRIPT_SETTING(SHOWSKY, ShowSky);
+ IMPLEMENT_BOOLEAN_SCRIPT_SETTING(SMOOTHLOS, SmoothLOS);
+-IMPLEMENT_BOOLEAN_SCRIPT_SETTING(POSTPROC, Postproc);
+ IMPLEMENT_BOOLEAN_SCRIPT_SETTING(DISPLAYFRUSTUM, DisplayFrustum);
+ 
+ #undef IMPLEMENT_BOOLEAN_SCRIPT_SETTING
+@@ -65,6 +67,20 @@
+ 	g_Renderer.SetRenderPath(CRenderer::GetRenderPathByName(name));
+ }
+ 
++bool JSI_Renderer::GetPostprocEnabled(ScriptInterface::CxPrivate* UNUSED(pCxPrivate))
++{
++	return g_Renderer.m_Options.m_Postproc;
++}
++
++void JSI_Renderer::SetPostprocEnabled(ScriptInterface::CxPrivate* UNUSED(pCxPrivate), bool Enabled)
++{
++	g_Renderer.m_Options.m_Postproc = Enabled;
++	g_Renderer.Resize(g_ScreenSize.RendererWidth(), g_ScreenSize.RendererHeight());
++	SViewPort vp = { 0, 0, g_ScreenSize.RendererWidth(), g_ScreenSize.RendererHeight() };
++	g_Game->GetView()->SetViewport(vp);
++}
++
++
+ void JSI_Renderer::RecreateShadowMap(ScriptInterface::CxPrivate* UNUSED(pCxPrivate))
+ {
+ 	g_Renderer.GetShadowMap().RecreateTexture();
+Index: source/simulation2/scripting/JSInterface_Simulation.cpp
+===================================================================
+--- ./source/simulation2/scripting/JSInterface_Simulation.cpp
++++ ./source/simulation2/scripting/JSInterface_Simulation.cpp
+@@ -21,7 +21,7 @@
+ 
+ #include "graphics/GameView.h"
+ #include "ps/Game.h"
+-#include "ps/GameSetup/Config.h"
++#include "ps/ScreenSize.h"
+ #include "ps/Pyrogenesis.h"
+ #include "scriptinterface/ScriptInterface.h"
+ #include "simulation2/Simulation2.h"
+@@ -109,12 +109,12 @@
+ 
+ std::vector<entity_id_t> JSI_Simulation::PickPlayerEntitiesOnScreen(ScriptInterface::CxPrivate* UNUSED(pCxPrivate), int player)
+ {
+-	return EntitySelection::PickEntitiesInRect(*g_Game->GetSimulation2(), *g_Game->GetView()->GetCamera(), 0, 0, g_xres, g_yres, player, false);
++	return EntitySelection::PickEntitiesInRect(*g_Game->GetSimulation2(), *g_Game->GetView()->GetCamera(), 0, 0, g_ScreenSize.LogicalWidth(), g_ScreenSize.LogicalHeight(), player, false);
+ }
+ 
+ std::vector<entity_id_t> JSI_Simulation::PickNonGaiaEntitiesOnScreen(ScriptInterface::CxPrivate* UNUSED(pCxPrivate))
+ {
+-	return EntitySelection::PickNonGaiaEntitiesInRect(*g_Game->GetSimulation2(), *g_Game->GetView()->GetCamera(), 0, 0, g_xres, g_yres, false);
++	return EntitySelection::PickNonGaiaEntitiesInRect(*g_Game->GetSimulation2(), *g_Game->GetView()->GetCamera(), 0, 0, g_ScreenSize.LogicalWidth(), g_ScreenSize.LogicalHeight(), false);
+ }
+ 
+ std::vector<entity_id_t> JSI_Simulation::PickSimilarPlayerEntities(ScriptInterface::CxPrivate* UNUSED(pCxPrivate), const std::string& templateName, bool includeOffScreen, bool matchRank, bool allowFoundations)
+Index: source/tools/atlas/GameInterface/Handlers/GraphicsSetupHandlers.cpp
+===================================================================
+--- ./source/tools/atlas/GameInterface/Handlers/GraphicsSetupHandlers.cpp
++++ ./source/tools/atlas/GameInterface/Handlers/GraphicsSetupHandlers.cpp
+@@ -31,6 +31,7 @@
+ #include "maths/MathUtil.h"
+ #include "ps/CConsole.h"
+ #include "ps/Game.h"
++#include "ps/ScreenSize.h"
+ #include "ps/VideoMode.h"
+ #include "ps/GameSetup/Config.h"
+ #include "ps/GameSetup/GameSetup.h"
+@@ -176,7 +177,8 @@
+ {
+ 	// Need to set the canvas size before possibly doing any rendering,
+ 	// else we'll get GL errors when trying to render to 0x0
+-	CVideoMode::UpdateRenderer(msg->width, msg->height);
++	g_ScreenSize.SetSize(msg->width, msg->height);
++	CVideoMode::UpdateRenderer();
+ 
+ 	g_AtlasGameLoop->glCanvas = msg->canvas;
+ 	Atlas_GLSetCurrent(const_cast<void*>(g_AtlasGameLoop->glCanvas));
+@@ -185,7 +187,8 @@
+ 
+ MESSAGEHANDLER(ResizeScreen)
+ {
+-	CVideoMode::UpdateRenderer(msg->width, msg->height);
++	g_ScreenSize.SetSize(msg->width, msg->height);
++	CVideoMode::UpdateRenderer();
+ 
+ #if OS_MACOSX
+ 	// OS X seems to require this to update the GL canvas
+Index: source/tools/atlas/GameInterface/Handlers/MiscHandlers.cpp
+===================================================================
+--- ./source/tools/atlas/GameInterface/Handlers/MiscHandlers.cpp
++++ ./source/tools/atlas/GameInterface/Handlers/MiscHandlers.cpp
+@@ -30,8 +30,8 @@
+ #include "lib/sysdep/cpu.h"
+ #include "maths/MathUtil.h"
+ #include "ps/Game.h"
++#include "ps/ScreenSize.h"
+ #include "ps/Util.h"
+-#include "ps/GameSetup/Config.h"
+ #include "ps/GameSetup/GameSetup.h"
+ #include "renderer/Renderer.h"
+ #include "simulation2/Simulation2.h"
+@@ -111,8 +111,8 @@
+ 
+ 	// Restore viewport
+ 	{
+-		g_Renderer.Resize(g_xres, g_yres);
+-		SViewPort vp = { 0, 0, g_xres, g_yres };
++		g_Renderer.Resize(g_ScreenSize.ScreenWidth(), g_ScreenSize.ScreenHeight());
++		SViewPort vp = { 0, 0, g_ScreenSize.ScreenWidth(), g_ScreenSize.ScreenHeight() };
+ 		g_Game->GetView()->GetCamera()->SetViewPort(vp);
+ 		g_Game->GetView()->SetCameraProjection();
+ 	}
+@@ -173,8 +173,8 @@
+ 	ev.ev.button.clicks = msg->clicks;
+ 	float x, y;
+ 	msg->pos->GetScreenSpace(x, y);
+-	ev.ev.button.x = (u16)clamp((int)x, 0, g_xres);
+-	ev.ev.button.y = (u16)clamp((int)y, 0, g_yres);
++	ev.ev.button.x = (u16)clamp((int)x, 0, g_ScreenSize.LogicalWidth());
++	ev.ev.button.y = (u16)clamp((int)y, 0, g_ScreenSize.LogicalHeight());
+ 	in_dispatch_event(&ev);
+ }
+ 
+@@ -184,8 +184,8 @@
+ 	ev.ev.type = SDL_MOUSEMOTION;
+ 	float x, y;
+ 	msg->pos->GetScreenSpace(x, y);
+-	ev.ev.motion.x = (u16)clamp((int)x, 0, g_xres);
+-	ev.ev.motion.y = (u16)clamp((int)y, 0, g_yres);
++	ev.ev.motion.x = (u16)clamp((int)x, 0, g_ScreenSize.LogicalWidth());
++	ev.ev.motion.y = (u16)clamp((int)y, 0, g_ScreenSize.LogicalHeight());
+ 	in_dispatch_event(&ev);
+ }
+ 
+Index: source/tools/atlas/GameInterface/View.cpp
+===================================================================
+--- ./source/tools/atlas/GameInterface/View.cpp
++++ ./source/tools/atlas/GameInterface/View.cpp
+@@ -34,6 +34,7 @@
+ #include "maths/MathUtil.h"
+ #include "ps/Game.h"
+ #include "ps/GameSetup/GameSetup.h"
++#include "ps/ScreenSize.h"
+ #include "ps/World.h"
+ #include "renderer/Renderer.h"
+ #include "simulation2/Simulation2.h"
+@@ -43,8 +44,6 @@
+ 
+ extern void (*Atlas_GLSwapBuffers)(void* context);
+ 
+-extern int g_xres, g_yres;
+-
+ //////////////////////////////////////////////////////////////////////////
+ 
+ void AtlasView::SetParam(const std::wstring& UNUSED(name), bool UNUSED(value))
+@@ -82,7 +81,7 @@
+ 
+ void AtlasViewActor::Render()
+ {
+-	SViewPort vp = { 0, 0, g_xres, g_yres };
++	SViewPort vp = { 0, 0, g_ScreenSize.ScreenWidth(), g_ScreenSize.ScreenHeight() };
+ 	CCamera& camera = GetCamera();
+ 	camera.SetViewPort(vp);
+ 	camera.SetProjection(2.f, 512.f, DEGTORAD(20.f));
+@@ -218,7 +217,7 @@
+ 
+ void AtlasViewGame::Render()
+ {
+-	SViewPort vp = { 0, 0, g_xres, g_yres };
++	SViewPort vp = { 0, 0, g_ScreenSize.ScreenWidth(), g_ScreenSize.ScreenHeight() };
+ 	CCamera& camera = GetCamera();
+ 	camera.SetViewPort(vp);
+ 	camera.SetProjection(g_Game->GetView()->GetNear(), g_Game->GetView()->GetFar(), g_Game->GetView()->GetFOV());
+@@ -283,9 +282,9 @@
+ 	CMatrix3D transform;
+ 	transform.SetIdentity();
+ 	transform.Scale(1.0f, -1.f, 1.0f);
+-	transform.Translate(0.0f, (float)g_yres, -1000.0f);
++	transform.Translate(0.0f, (float)g_ScreenSize.ScreenHeight(), -1000.0f);
+ 	CMatrix3D proj;
+-	proj.SetOrtho(0.f, (float)g_xres, 0.f, (float)g_yres, -1.f, 1000.f);
++	proj.SetOrtho(0.f, (float)g_ScreenSize.GuiWidth(), 0.f, (float)g_ScreenSize.ScreenHeight(), -1.f, 1000.f);
+ 	transform = proj * transform;
+ 	glLoadMatrixf(&transform._11);
+ 

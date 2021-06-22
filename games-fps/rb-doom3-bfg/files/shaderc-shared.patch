@@ -1,0 +1,39 @@
+--- ./neo/CMakeLists.txt~	2021-05-09 21:21:08.000000000 +0100
++++ ./neo/CMakeLists.txt	2021-05-09 21:58:54.190214682 +0100
+@@ -354,11 +354,13 @@
+ 	if(SPIRV_SHADERC)
+ 		add_definitions(-DSPIRV_SHADERC)
+ 
+-		# SRS - Add case for UNIX/OSX
+-		if(CMAKE_CL_64 OR UNIX)
+-			link_directories($ENV{VULKAN_SDK}/Lib)
+-		else()
+-			link_directories($ENV{VULKAN_SDK}/Lib32)
++		if(Darwin)
++			# SRS - Add case for UNIX/OSX
++			if(CMAKE_CL_64 OR UNIX)
++				link_directories($ENV{VULKAN_SDK}/Lib)
++			else()
++				link_directories($ENV{VULKAN_SDK}/Lib32)
++			endif()
+ 		endif()
+ 
+ 	else()
+@@ -1465,7 +1467,7 @@
+ 			)
+ 
+ 		if(SPIRV_SHADERC)
+-			list(APPEND Vulkan_LIBRARIES shaderc_combined)
++			list(APPEND Vulkan_LIBRARIES shaderc_shared)
+ 		else()
+ 			list(APPEND Vulkan_LIBRARIES glslang SPIRV)
+ 
+@@ -1746,7 +1746,7 @@
+ 				
+ 			# SRS - Added UNIX/OSX support for shaderc
+ 			if(SPIRV_SHADERC)
+-				list(APPEND Vulkan_LIBRARIES shaderc_combined)
++				list(APPEND Vulkan_LIBRARIES shaderc_shared)
+ 			else()
+ 				list(APPEND Vulkan_LIBRARIES glslang SPIRV)
+ 

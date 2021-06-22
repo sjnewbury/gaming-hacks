@@ -1,0 +1,46 @@
+--- ./neo/CMakeLists.txt.orig	2020-11-11 22:01:30.000000000 +0000
++++ ./neo/CMakeLists.txt	2020-11-11 22:15:05.892964711 +0000
+@@ -342,13 +342,23 @@
+ 
+ 	# Eric: For use with SDL2/Vulkan
+ 	if(UNIX)
++ 		find_package(ECM REQUIRED NO_MODULE)
++ 		set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
++		find_package(Wayland COMPONENTS Client)
+ 		find_package(X11_XCB)
+-		if(X11_XCB_FOUND)
++		if(Wayland_Client_FOUND)
++			add_definitions(-DHAVE_WAYLAND)
++			list(APPEND SUBSYSTEMS [WAYLAND])
++			include_directories(${Wayland_Client_INCLUDE_DIRS})
++			add_definitions(-DVK_USE_PLATFORM_WAYLAND_KHR)
++		elseif(X11_XCB_FOUND)
+ 			add_definitions(-DHAVE_X11_XCB)
+ 			list(APPEND SUBSYSTEMS [X11])
+ 			include_directories(${X11_XCB_INCLUDE_DIRS})
++			add_definitions(-DVK_USE_PLATFORM_XCB_KHR)
++		else()
++			add_definitions(-DVK_USE_PLATFORM_XLIB_KHR)
+ 		endif()
+-		add_definitions(-DVK_USE_PLATFORM_XLIB_KHR)
+ 	elseif(WIN32)
+ 		add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
+ 	endif()
+--- ./neo/renderer/Vulkan/RenderBackend_VK.cpp~	2020-11-11 23:28:14.000000000 +0000
++++ ./neo/renderer/Vulkan/RenderBackend_VK.cpp	2020-11-11 23:47:32.053942492 +0000
+@@ -432,15 +432,6 @@
+ 
+ 	ID_VK_CHECK( vkCreateWin32SurfaceKHR( vkcontext.instance, &createInfo, NULL, &vkcontext.surface ) );
+ 
+-#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
+-	VkWaylandSurfaceCreateInfoKHR createInfo = {};
+-	createInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
+-	createInfo.pNext = NULL;
+-	createInfo.display = info.display;
+-	createInfo.surface = info.window;
+-
+-	ID_VK_CHECK( vkCreateWaylandSurfaceKHR( info.inst, &createInfo, NULL, &info.surface ) );
+-
+ #else
+ #if defined(__linux__)
+ 	if( !SDL_Vulkan_CreateSurface( vkcontext.sdlWindow, vkcontext.instance, &vkcontext.surface ) )

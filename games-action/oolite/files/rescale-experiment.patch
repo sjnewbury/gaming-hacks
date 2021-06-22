@@ -1,0 +1,1136 @@
+diff --git a/Resources/Config/equipment.plist b/Resources/Config/equipment.plist
+index 20b935f2..f6068624 100644
+--- a/Resources/Config/equipment.plist
++++ b/Resources/Config/equipment.plist
+@@ -129,7 +129,7 @@
+ 			condition_script = "oolite-conditions.js";
+ 			available_to_all = true;
+ 			weapon_info = {
+-				range = 12500;
++				range = 3750;
+ 				energy = 0.8;
+ 				damage = 15.0;
+ 				recharge_rate = 0.5;
+@@ -147,7 +147,7 @@
+ 			condition_script = "oolite-conditions.js";
+ 			available_to_all = true;
+ 			weapon_info = {
+-				range = 15000;
++				range = 3750;
+ 				energy = 0.5;
+ 				damage = 6.0;
+ 				recharge_rate = 0.1;
+@@ -166,7 +166,7 @@
+ 			condition_script = "oolite-conditions.js";
+ 			available_to_all = true;
+ 			weapon_info = {
+-				range = 12500;
++				range = 3125;
+ 				energy = 1.4;
+ 				damage = 50.0;
+ 				recharge_rate = 2.5;
+@@ -185,7 +185,7 @@
+ 			condition_script = "oolite-conditions.js";
+ 			available_to_all = true;
+ 			weapon_info = {
+-				range = 30000;
++				range = 5000;
+ 				energy = 1.1;
+ 				damage = 12.0;
+ 				recharge_rate = 0.1;
+@@ -351,7 +351,7 @@
+ 		{
+ 			available_to_player = false;
+ 			weapon_info = {
+-				range = 17500;
++				range = 4500;
+ 				energy = 1.1;
+ 				damage = 12.5;
+ 				recharge_rate = 1.0;
+diff --git a/Resources/Config/planetinfo.plist b/Resources/Config/planetinfo.plist
+index c8e732ef..3bc7df34 100644
+--- a/Resources/Config/planetinfo.plist
++++ b/Resources/Config/planetinfo.plist
+@@ -15,6 +15,7 @@
+ 		sky_color_1 = (0.75,0.8,1);
+ 		sky_color_2 = (1.0,0.85,0.6);
+ 		stations_require_docking_clearance = no;
++		sun_distance_multiplier = 6.6;
+ 	};
+ 
+ 	"0 0" = {
+diff --git a/Resources/Config/shipdata.plist b/Resources/Config/shipdata.plist
+index d9bab2d1..16c02b91 100644
+--- a/Resources/Config/shipdata.plist
++++ b/Resources/Config/shipdata.plist
+@@ -141,15 +141,16 @@
+ 		max_energy = 85;
+ 		max_flight_pitch = 2;
+ 		max_flight_roll = 2.8;
+-		max_flight_speed = 240;
++		max_flight_speed = 120;
+ 		max_missiles = 1;
+ 		missile_launch_position = "0.0 -5.1 19.2374";
+ 		missiles = 1;
+ 		model = "oolite_adder.dat";
++		model_scale_factor = 0.33;
+ 		name = "Adder";
+ 		roles = "trader(0.25) trader-courier(0.5) trader-smuggler pirate-light-fighter(0.25) pirate(0.2) scavenger shuttle hermit-ship";
+ 		scoop_position = "0.0 -5.1 22.724";
+-		thrust = 30;
++		thrust = 15;
+ 		view_position_aft = "0.0 5.0 -22.5";
+ 		view_position_forward = "0.0 3.5 17.4";
+ 		view_position_port = "-12.0 1.5 -1.0";
+@@ -193,9 +194,10 @@
+ 		max_energy = 1;
+ 		max_flight_pitch = 0.5;
+ 		max_flight_roll = 0.5;
+-		max_flight_speed = 50;
++		max_flight_speed = 25;
+ 		missiles = 0;
+ 		model = "oolite_alloy.dat";
++		model_scale_factor = 0.33;
+ 		name = "Metal fragment";
+ 		roles = "alloy";
+ 		scan_class = "CLASS_CARGO";
+@@ -334,7 +336,7 @@
+ 		max_energy = 500;
+ 		max_flight_pitch = 0.4;
+ 		max_flight_roll = 0.75;
+-		max_flight_speed = 140;
++		max_flight_speed = 70;
+ 		max_missiles = 7;
+ 		missile_launch_position = "0.0 -11.2 71.0";
+ 		missiles = 7;
+@@ -342,7 +344,7 @@
+ 		name = "Anaconda";
+ 		roles = "trader(0.5) trader-courier(0.1)";
+ 		scoop_position = "0.0 -30.0 -60";
+-		thrust = 14;
++		thrust = 7;
+ 		view_position_aft = "0.0 14.038046 -81.618951";
+ 		view_position_forward = "0.0 -1.8 79.344";
+ 		view_position_port = "-26.255348 11.415907 -32.565386";
+@@ -478,15 +480,16 @@
+ 		max_energy = 350;
+ 		max_flight_pitch = 1;
+ 		max_flight_roll = 2;
+-		max_flight_speed = 400;
++		max_flight_speed = 200;
+ 		max_missiles = 1;
+ 		missile_launch_position = "0.0 -5.9 17.5";
+ 		missiles = 1;
+ 		model = "oolite_asp.dat";
++		model_scale_factor = 0.4;
+ 		name = "Asp Mark II";
+ 		roles = "trader-courier hunter-medium(0.75) hunter-heavy(0.75) pirate-medium-fighter(0.5) pirate-heavy-fighter(0.5) pirate-interceptor pirate-aegis-raider escort-heavy assassin-heavy asp-pirate";
+ 		scoop_position = "0.0 -6.22 17.48";
+-		thrust = 50;
++		thrust = 25;
+ 		view_position_aft = "0.0 4.7 -39.5811";
+ 		view_position_forward = "0.0 2.62065 50.1318";
+ 		view_position_port = "-27.73195 5.75933 2.57624";
+@@ -551,7 +554,7 @@
+ 		max_flight_speed = 0;
+ 		missiles = 0;
+ 		model = "oolite_asteroid.dat";
+-		name = "Asteroid";
++		name = "Medium Asteroid";
+ 		roles = "asteroid";
+ 		scan_class = "CLASS_ROCK";
+ 		smooth = yes;
+@@ -573,6 +576,151 @@
+ 		};
+ 		model = "oolite_alt_asteroid.dat";
+ 	};
++	"oolite_template_asteroid_small" = 
++	{
++		like_ship = "oolite_template_asteroid";
++		bounty = 5;
++		is_template = 1;
++		likely_cargo = 2;
++		materials =
++		{
++			"oolite_alt_asteroid_diffuse.png" =
++			{
++				shininess = 7;
++				specular_color = (0.3, 0.3, 0.3, 1.0);
++			};
++		};
++		model = "oolite_asteroid.dat";
++		model_scale_factor = 0.33;
++		name = "Small Asteroid";
++		roles = "asteroid";
++	};
++	"oolite_template_asteroid_small_alt" = 
++	{
++		like_ship = "oolite_template_asteroid";
++		bounty = 5;
++		is_template = 1;
++		likely_cargo = 2;
++		materials =
++		{
++			"oolite_alt_asteroid_diffuse.png" =
++			{
++				shininess = 7;
++				specular_color = (0.3, 0.3, 0.3, 1.0);
++			};
++		};
++		model = "oolite_alt_asteroid.dat";
++		model_scale_factor = 0.33;
++		name = "Small Asteroid";
++		roles = "asteroid";
++	};
++	"oolite_template_asteroid_large" = 
++	{
++		like_ship = "oolite_template_asteroid";
++		bounty = 30;
++		is_template = 1;
++		likely_cargo = 12;
++		materials =
++		{
++			"oolite_alt_asteroid_diffuse.png" =
++			{
++				shininess = 7;
++				specular_color = (0.3, 0.3, 0.3, 1.0);
++			};
++		};
++		max_energy = 100;
++		energy_recharge_rate = 500;
++		model = "oolite_asteroid.dat";
++		model_scale_factor = 3.3;
++		name = "Large Asteroid";
++		roles = "asteroid(0.25)";
++	};
++	"oolite_template_asteroid_large_alt" = 
++	{
++		like_ship = "oolite_template_asteroid";
++		bounty = 30;
++		is_template = 1;
++		likely_cargo = 12;
++		materials =
++		{
++			"oolite_alt_asteroid_diffuse.png" =
++			{
++				shininess = 7;
++				specular_color = (0.3, 0.3, 0.3, 1.0);
++			};
++		};
++		max_energy = 100;
++		energy_recharge_rate = 500;
++		model = "oolite_alt_asteroid.dat";
++		model_scale_factor = 3.3;
++		name = "Large Asteroid";
++		roles = "asteroid(0.25)";
++	};
++	"oolite_template_asteroid_huge" = 
++	{
++		like_ship = "oolite_template_asteroid";
++		bounty = 100;
++		is_template = 1;
++		materials =
++		{
++			"oolite_alt_asteroid_diffuse.png" =
++			{
++				shininess = 7;
++				specular_color = (0.3, 0.3, 0.3, 1.0);
++			};
++		};
++		max_energy = 25000;
++		energy_recharge_rate = 500;
++		model = "oolite_asteroid.dat";
++		model_scale_factor = 6.6;
++		name = "Huge Asteroid";
++		roles = "asteroid(0.05)";
++	};
++	"oolite_template_asteroid_huge_alt" = 
++	{
++		like_ship = "oolite_template_asteroid";
++		bounty = 100;
++		is_template = 1;
++		materials =
++		{
++			"oolite_alt_asteroid_diffuse.png" =
++			{
++				shininess = 7;
++				specular_color = (0.3, 0.3, 0.3, 1.0);
++			};
++		};
++		max_energy = 25000;
++		energy_recharge_rate = 500;
++		model = "oolite_alt_asteroid.dat";
++		model_scale_factor = 6.6;
++		name = "Huge Asteroid";
++		roles = "asteroid(0.05)";
++	};
++	
++	"asteroid-small" = 
++	{
++		like_ship = "oolite_template_asteroid_small";
++	};
++	"asteroid-alternative-small" =
++	{
++		like_ship = "oolite_template_asteroid_small_alt";
++	};
++	"asteroid-large" = 
++	{
++		like_ship = "oolite_template_asteroid_large";
++	};
++	"asteroid-alternative-large" =
++	{
++		like_ship = "oolite_template_asteroid_large_alt";
++	};
++	"asteroid-huge" = 
++	{
++		like_ship = "oolite_template_asteroid_huge";
++	};
++	"asteroid-alternative-huge" =
++	{
++		like_ship = "oolite_template_asteroid_huge_alt";
++	};
+ 	"oolite_template_tutorial-asteroid" =
+ 	{
+ 		like_ship = "oolite_template_asteroid";
+@@ -603,9 +751,10 @@
+ 		max_energy = 1;
+ 		max_flight_pitch = 0.5;
+ 		max_flight_roll = 0.5;
+-		max_flight_speed = 50;
++		max_flight_speed = 25;
+ 		missiles = 0;
+ 		model = "oolite_barrel.dat";
++		model_scale_factor = 0.33;
+ 		name = "Cargo container";
+ 		roles = "cargopod 1t-cargopod";
+ 		scan_class = "CLASS_CARGO";
+@@ -727,7 +876,7 @@
+ 		max_energy = 450;
+ 		max_flight_pitch = 1;
+ 		max_flight_roll = 2.8;
+-		max_flight_speed = 240;
++		max_flight_speed = 120;
+ 		max_missiles = 4;
+ 		missile_launch_position = "0.0 2.322665 56.223506";
+ 		missiles = 4;
+@@ -735,7 +884,7 @@
+ 		name = "Boa";
+ 		roles = "trader";
+ 		scoop_position = "0.0 3.029881 49.396415";
+-		thrust = 36;
++		thrust = 18;
+ 		view_position_aft = "0.0 3.894413 -51.6227";
+ 		view_position_forward = "0.0 9.71333 54.7745";
+ 		view_position_port = "-16.75005 7.88388 15.119505";
+@@ -885,7 +1034,7 @@
+ 		max_energy = 525;
+ 		max_flight_pitch = 1;
+ 		max_flight_roll = 2.5;
+-		max_flight_speed = 312;
++		max_flight_speed = 156;
+ 		max_missiles = 5;
+ 		missile_launch_position = "0.0 -4.888735 48.6764";
+ 		missiles = 5;
+@@ -893,7 +1042,7 @@
+ 		name = "Boa Class Cruiser";
+ 		roles = "trader(0.25) trader-courier(0.05)";
+ 		scoop_position = "0.0 -6.100643 44.2919";
+-		thrust = 40;
++		thrust = 20;
+ 		view_position_aft = "0.0 8.343195 -55.9";
+ 		view_position_forward = "-0.075081 1.34004 49.3";
+ 		view_position_port = "-21.7753 5.22895 -5.45145";
+@@ -947,9 +1096,10 @@
+ 		max_energy = 25;
+ 		max_flight_pitch = 0.5;
+ 		max_flight_roll = 0.5;
+-		max_flight_speed = 50;
++		max_flight_speed = 25;
+ 		missiles = 0;
+ 		model = "oolite_boulder.dat";
++		model_scale_factor = 0.5;
+ 		name = "Boulder";
+ 		roles = "boulder";
+ 		scan_class = "CLASS_ROCK";
+@@ -988,9 +1138,10 @@
+ 		max_flight_speed = 0;
+ 		missiles = 0;
+ 		model = "buoy.dat";
++		model_scale_factor = 0.5;
+ 		name = "Navigation Buoy";
+ 		roles = "buoy";
+-		thrust = 100;
++		thrust = 50;
+ 		unpiloted = yes;
+ 		smooth = yes;
+ 		scan_class = "CLASS_BUOY";
+@@ -1227,14 +1378,15 @@
+ 		max_energy = 256;
+ 		max_flight_pitch = 1;
+ 		max_flight_roll = 2;
+-		max_flight_speed = 350;
++		max_flight_speed = 175;
+ 		max_missiles = 4;
+ 		missile_launch_position = "0.0 -15.5 -24.5";
+ 		missiles = 3;
+ 		model = "oolite_cobra3.dat";
++		model_scale_factor = 0.5;
+ 		name = "Cobra Mark III";
+ 		scoop_position = "0.0 -5.5 25.0";
+-		thrust = 32;
++		thrust = 16;
+ 		view_position_aft = "0.0 6.0 -35.5";
+ 		view_position_forward = "0.0 7.25 31.0";
+ 		view_position_port = "-35.5 7.5 0.0";
+@@ -1249,8 +1401,8 @@
+ 	{
+ 		like_ship = "oolite_template_cobra3";
+ 		is_template = 1;
+-		max_flight_speed = 300;
+-		thrust = 30;
++		max_flight_speed = 150;
++		thrust = 15;
+ 		roles = "trader(0.375) trader-courier(0.2) trader-smuggler(0.75) hunter-medium(0.5) pirate-heavy-fighter pirate-interceptor(0.25) pirate-aegis-raider(0.2) scavenger sunskim-trader";
+ 	};
+ 	"oolite_template_cobra3-alternate" =
+@@ -1259,7 +1411,7 @@
+ 		has_ecm = 0.95;
+ 		is_template = 1;
+ 		max_cargo = 35;
+-		max_flight_speed = 300;
++		max_flight_speed = 150;
+ 		materials =
+ 		{
+ 			"Hull" =
+@@ -1314,7 +1466,7 @@
+ 				};			
+ 		};
+ 		max_cargo = 20;
+-		max_flight_speed = 300;
++		max_flight_speed = 150;
+ 		missiles = 1;
+ 		roles = "pirate(0.25) pirate-medium-fighter(0.5)";
+ 	};
+@@ -1424,15 +1576,16 @@
+ 		max_energy = 150;
+ 		max_flight_pitch = 1.2;
+ 		max_flight_roll = 2;
+-		max_flight_speed = 260;
++		max_flight_speed = 130;
+ 		max_missiles = 1;
+ 		missile_launch_position = "0.0 -6.4 27.3215";
+ 		missiles = 1;
+ 		model = "oolite_cobramk1.dat";
++		model_scale_factor = 0.5;
+ 		name = "Cobra Mark I";
+ 		roles = "pirate(0.5) pirate-medium-fighter hunter-medium scavenger trader trader-smuggler hermit-ship escort-medium(0.75) escort(0.25) assassin-light";
+ 		scoop_position = "0.0 -5.0 -9";
+-		thrust = 25;
++		thrust = 12.5;
+ 		view_position_aft = "0.0 3.75 -27.5";
+ 		view_position_forward = "0.0 5.0 21.7";
+ 		view_position_port = "-16.0 6.5 0.0";
+@@ -1468,7 +1621,7 @@
+ 			};
+ 		};
+ 		roles = "pirate(0.25) pirate-light-freighter(0.5) escort-heavy(0.5) escort-medium(0.25)";
+-		thrust = 30;
++		thrust = 15;
+ 	};
+ 	"oolite_template_cobramk1-miner" = 
+ 	{
+@@ -1542,14 +1695,15 @@
+ 		max_energy = 450;
+ 		max_flight_pitch = 1.75;
+ 		max_flight_roll = 2.5;
+-		max_flight_speed = 600;
++		max_flight_speed = 300;
+ 		missile_launch_position = "0.0 -9.849197 28.224508";
+ 		missiles = 3;
+ 		model = "oolite_constrictor.dat";
++		model_scale_factor = 0.4;
+ 		name = "Constrictor";
+ 		pilot = "constrictor-mission-thief";	// key to entry in characters.plist
+ 		roles = "constrictor";
+-		thrust = 50;
++		thrust = 25;
+ 		weapon_facings = 15;
+ 		weapon_position_forward = "0.0 -5.780295 26.8758";
+ 		weapon_position_aft = "0.0 2.243567 -25.8417";
+@@ -1731,7 +1885,7 @@
+ 				size = 10;
+ 			}
+ 		);
+-		thrust = 100;
++		thrust = 50;
+ 		weapon_energy = 0;
+ 	};
+ 	"oolite_template_dodecahedron-station" =
+@@ -1902,7 +2056,7 @@
+ 				size = 10;
+ 			}
+ 		);
+-		thrust = 100;
++		thrust = 50;
+ 		weapon_energy = 0;
+ 	};
+ 	// ecm hardened missile (missile template is later on)
+@@ -1923,7 +2077,7 @@
+ 					emission_modulate_color = (0.2, 0.8, 1.0);				
+ 				}; 
+ 			};
+-		model = "oolite_missile_hardhead.dat";	
++		model = "oolite_missile_hardhead.dat";
+ 		name = "ECM Hardened Missile";
+ 		script_info = 
+ 		{
+@@ -1968,14 +2122,15 @@
+ 		max_energy = 25;
+ 		max_flight_pitch = 0.5;
+ 		max_flight_roll = 0.5;
+-		max_flight_speed = 50;
++		max_flight_speed = 25;
+ 		missile_launch_position = "0.0 0.0 4.5";
+ 		missiles = 0;
+ 		model = "oolite_escape_capsule.dat";
++		model_scale_factor = 0.33;
+ 		name = "Escape capsule";
+ 		roles = "escape-capsule";
+ 		scan_class = "CLASS_CARGO";
+-		thrust = 5;
++		thrust = 2.5;
+ 		weapon_position_aft = "0.0 0.0 -1.67";
+ 		weapon_position_forward = "0.0 0.0 4.18";
+ 		weapon_position_port = "-1.31 0.76 0.34";
+@@ -2093,15 +2248,16 @@
+ 		max_energy = 150;
+ 		max_flight_pitch = 1;
+ 		max_flight_roll = 3.6;
+-		max_flight_speed = 300;
++		max_flight_speed = 150;
+ 		max_missiles = 2;
+ 		missile_launch_position = "0.0 -12.3 40.05";
+ 		missiles = 2;
+ 		model = "oolite_ferdelance.dat";
++		model_scale_factor = 0.5;
+ 		name = "Fer-de-Lance";
+ 		roles = "trader(0.25) trader-courier trader-smuggler(0.5) pirate-medium-fighter(0.75) pirate-heavy-fighter(0.75) pirate-interceptor pirate-aegis-raider(0.75) pirate(0.25) hunter-medium(0.75) hunter-heavy assassin-medium";
+ 		scoop_position = "0.0 -10.0322 21.6829";
+-		thrust = 36;
++		thrust = 18;
+ 		view_position_aft = "0.0 12.0 -32.5";
+ 		view_position_forward = "0.0 0.0 47.0";
+ 		view_position_port = "-16.875 2.0 3.5";
+@@ -2158,14 +2314,15 @@
+ 		max_energy = 250;
+ 		max_flight_pitch = 1.5;
+ 		max_flight_roll = 3;
+-		max_flight_speed = 300;
++		max_flight_speed = 150;
+ 		missile_launch_position = "0.0 -8.08 19.14";
+ 		missiles = 1;
+ 		model = "oolite_gecko.dat";
++		model_scale_factor = 0.33;
+ 		name = "Gecko";
+ 		roles = "hunter(0.75) pirate-light-fighter(0.5) pirate-medium-fighter(0.75) pirate(0.5) escort(0.25) escort-medium(0.5) escort-heavy";
+ 		scoop_position = "0.0 -6.6 8.4";
+-		thrust = 45;
++		thrust = 22.5;
+ 		weapon_facings = 1;
+ 		weapon_position_forward = "0.0 -2.49055 25.6416";
+ 		weapon_position_aft = "0.0 5.54957 -12.1558";
+@@ -2340,7 +2497,7 @@
+ 				size = 10;
+ 			}
+ 		);
+-		thrust = 100;
++		thrust = 50;
+ 		weapon_energy = 0;
+ 	};
+ 	"oolite_template_krait" = 
+@@ -2383,14 +2540,15 @@
+ 		max_energy = 250;
+ 		max_flight_pitch = 1.5;
+ 		max_flight_roll = 2.75;
+-		max_flight_speed = 300;
++		max_flight_speed = 150;
+ 		missile_launch_position = "0.0 -7.65 33.34";
+ 		missiles = 0;
+ 		model = "oolite_krait.dat";
++		model_scale_factor = 0.4;
+ 		name = "Krait";
+ 		roles = "pirate pirate-light-fighter(0.75) hunter(0.5) escort(0.25) assassin-light";
+ 		scoop_position = "0.0 -7.284 4.628";
+-		thrust = 35;
++		thrust = 17.5;
+ 		weapon_facings = 1;
+ 		weapon_position_aft = "0.0 0.0 -34.6";
+ 		weapon_position_forward = "0.0 -1.6045 41.5081";
+@@ -2458,14 +2616,15 @@
+ 		max_energy = 240;
+ 		max_flight_pitch = 1.4;
+ 		max_flight_roll = 2.1;
+-		max_flight_speed = 320;
++		max_flight_speed = 160;
+ 		missile_launch_position = "0.0 -4.5 21.7";
+ 		missiles = 0;
+ 		model = "oolite_mamba.dat";
++		model_scale_factor = 0.365;
+ 		name = "Mamba";
+ 		roles = "pirate pirate-light-fighter(0.5) hunter";
+ 		scoop_position = "0.0 -2.0 -3";
+-		thrust = 32;
++		thrust = 16;
+ 		weapon_facings = 1;
+ 		weapon_position_aft = "0.0 1.5184 -30.3193";
+ 		weapon_position_forward = "0.0 0.241963 33.558";
+@@ -2523,9 +2682,10 @@
+ 		max_energy = 5;
+ 		max_flight_pitch = 8;
+ 		max_flight_roll = 10;
+-		max_flight_speed = 750;
++		max_flight_speed = 375;
+ 		missiles = 0;
+ 		model = "oolite_missile.dat";
++		model_scale_factor = 0.33;
+ 		name = "Missile";
+ 		roles = "missile EQ_MISSILE";
+ 		scan_class = "CLASS_MISSILE";
+@@ -2537,7 +2697,7 @@
+ 			oolite_missile_proximity = 25;
+ 			oolite_missile_range = 30000;
+ 		};
+-		thrust = 250;
++		thrust = 125;
+ 		unpiloted = yes;
+ 		weapon_energy = 4500;
+ 	};
+@@ -2649,15 +2809,16 @@
+ 		max_energy = 240;
+ 		max_flight_pitch = 1.5;
+ 		max_flight_roll = 2.5;
+-		max_flight_speed = 300;
++		max_flight_speed = 150;
+ 		max_missiles = 2;
+ 		missile_launch_position = "0.0 -7.75 0.5";
+ 		missiles = 2;
+ 		model = "oolite_moray.dat";
++		model_scale_factor = 0.4;
+ 		name = "Moray Star Boat";
+ 		roles = "trader(0.5) trader-courier(0.25) trader-smuggler hunter-medium pirate-medium-fighter pirate-interceptor(0.25) pirate(0.5) pirate-light-freighter(0.5) escort-medium(0.25) assassin-light";
+ 		scoop_position = "0.0 -15.212809 26.5399";
+-		thrust = 32;
++		thrust = 16;
+ 		view_position_aft = "0.0 3.076074 -34.8507";
+ 		view_position_forward = "0.0 -6.77 33.468";
+ 		view_position_port = "-20.695265 -0.130955 -14.726075";
+@@ -2860,7 +3021,7 @@
+ 		max_energy = 450;
+ 		max_flight_pitch = 0.8;
+ 		max_flight_roll = 2;
+-		max_flight_speed = 200;
++		max_flight_speed = 100;
+ 		max_missiles = 2;
+ 		missile_launch_position = "0.0 -2.2 63.5";
+ 		missiles = 2;
+@@ -2868,7 +3029,7 @@
+ 		name = "Python";
+ 		roles = "trader(0.5) trader-smuggler(0.2) pirate(0.2) pirate-light-freighter(0.2)";
+ 		scoop_position = "0.0 -15.0 -21.5";
+-		thrust = 20;
++		thrust = 10;
+ 		view_position_aft = "0.0 9.150712 -64.8269";
+ 		view_position_forward = "0.0 1.18304 62. 0972";
+ 		view_position_port = "-35.80095 2.0 -27.05945";
+@@ -3011,8 +3172,9 @@
+ 		max_energy = 10;
+ 		max_flight_pitch = 2;
+ 		max_flight_roll = 2;
+-		max_flight_speed = 1000;
++		max_flight_speed = 500;
+ 		model = "qbomb.dat";
++		model_scale_factor = 0.33;
+ 		name = "Quirium Cascade Mine";
+ 		scan_class = "CLASS_MINE";
+ 		roles = "energy-bomb EQ_QC_MINE";
+@@ -3135,7 +3297,7 @@
+ 				is_dock = true;
+ 			}
+ 		);
+-		thrust = 100;
++		thrust = 50;
+ 		tunnel_corners = 6;
+ 		tunnel_start_angle = 0;
+ 		tunnel_aspect_ratio = 1;
+@@ -3306,13 +3468,13 @@
+ 		max_energy = 120;
+ 		max_flight_pitch = 0.9;
+ 		max_flight_roll = 2;
+-		max_flight_speed = 80;
++		max_flight_speed = 40;
+ 		missile_launch_position = "0.0 -7.25 15.0";
+ 		missiles = 0;
+ 		model = "oolite_shuttle.dat";
+ 		name = "Orbital Shuttle";
+ 		roles = "shuttle";
+-		thrust = 16;
++		thrust = 8;
+ 		weapon_facings = 0;
+ 		weapon_position_aft = "0.0 0.0 -17.5";
+ 		weapon_position_forward = "-0.0 -1.67 27.4";
+@@ -3359,13 +3521,14 @@
+ 		max_energy = 240;
+ 		max_flight_pitch = 1.6;
+ 		max_flight_roll = 2.8;
+-		max_flight_speed = 370;
++		max_flight_speed = 185;
+ 		missile_launch_position = "0.0 -8.0 13.17";
+ 		missiles = 0;
+ 		model = "oolite_sidewinder.dat";
++		model_scale_factor = 0.33;
+ 		name = "Sidewinder Scout Ship";
+ 		roles = "pirate(0.75) pirate-light-fighter(0.25) hunter";
+-		thrust = 37;
++		thrust = 18.5;
+ 		weapon_facings = 1;
+ 		weapon_position_aft = "0.0 -6.5 -17.5";
+ 		weapon_position_forward = "0.0 -2.764625 25.2155";	
+@@ -3419,9 +3582,10 @@
+ 		max_energy = 5;
+ 		max_flight_pitch = 1;
+ 		max_flight_roll = 1;
+-		max_flight_speed = 20;
++		max_flight_speed = 10;
+ 		missiles = 0;
+ 		model = "oolite_splinter.dat";
++		model_scale_factor = 0.33;
+ 		name = "Splinter";
+ 		roles = "splinter";
+ 		scan_class = "CLASS_CARGO";
+@@ -3463,14 +3627,15 @@
+ 		max_energy = 150;
+ 		max_flight_pitch = 1;
+ 		max_flight_roll = 2;
+-		max_flight_speed = 450;
++		max_flight_speed = 225;
+ 		missiles = 0;
+ 		model = "oolite_thargon.dat";
++		model_scale_factor = 0.33;
+ 		name = "Thargoid Robot Fighter";
+ 		roles = "tharglet thargon EQ_THARGON";
+ 		scan_class = "CLASS_THARGOID";
+-		scanner_range = 50000;
+-		thrust = 40;
++		scanner_range = 16666;
++		thrust = 20;
+ 		unpiloted = yes;
+ 		weapon_facings = 1;
+ 		weapon_position_aft = "0.0 0.0 -16.5";
+@@ -3505,18 +3670,19 @@
+ 		max_energy = 600;
+ 		max_flight_pitch = 1;
+ 		max_flight_roll = 2;
+-		max_flight_speed = 500;
++		max_flight_speed = 250;
+ 		missile_launch_position = "0.0 -58.0 -0.0";
+ 		missile_role = "EQ_THARGON";
+ 		missile_load_time = 1.5;
+ 		missiles = 5;
+ 		model = "oolite_thargoid.dat";
++		model_scale_factor = 0.5;
+ 		name = "Thargoid Warship";
+ 		roles = "thargoid thargoid-mothership";
+ 		scan_class = "CLASS_THARGOID";
+-		scanner_range = 60000;
++		scanner_range = 16666;
+ 		script = "oolite-thargoid-warship.js";
+-		thrust = 50;
++		thrust = 25;
+ 		weapon_facings = 3;
+ 	};
+ 	"oolite_template_transporter" = 
+@@ -3548,14 +3714,14 @@
+ 		max_energy = 150;
+ 		max_flight_pitch = 1;
+ 		max_flight_roll = 2;
+-		max_flight_speed = 100;
++		max_flight_speed = 50;
+ 		missile_launch_position = "0.0 -6.79 21.0";
+ 		missiles = 0;
+ 		model = "oolite_transporter.dat";
+ 		name = "Transporter";
+ 		roles = "shuttle";
+ 		scoop_position = "0.0 -6.0 -10.5";
+-		thrust = 20;
++		thrust = 10;
+ 		weapon_facings = 1;
+ 		weapon_position_forward = "0.0 -3.57123 20.76385";
+ 		weapon_position_aft = "0.0 0.0 -17.5";
+@@ -3629,10 +3795,11 @@
+ 		max_energy = 180;
+ 		max_flight_pitch = 1.8;
+ 		max_flight_roll = 2.8;
+-		max_flight_speed = 320;
++		max_flight_speed = 160;
+ 		missile_launch_position = "0.0 -8.5 -11.0";
+ 		missiles = 1;
+ 		model = "oolite_viper.dat";
++		model_scale_factor = 0.365;
+ 		name = "GalCop Viper";
+ 		roles = "police";
+ 		scan_class = "CLASS_POLICE";
+@@ -3711,7 +3878,7 @@
+ 				position = (12.50, 0.0, 0.0);
+ 			}
+ 		);
+-		thrust = 32;
++		thrust = 16;
+ 		weapon_facings = 1;
+ 		weapon_position_aft = "0.0 0.0 -27.5";
+ 		weapon_position_forward = "0.0 -0.15 35.0344";	
+@@ -3766,10 +3933,11 @@
+ 		max_energy = 280;
+ 		max_flight_pitch = 2;
+ 		max_flight_roll = 4.2;
+-		max_flight_speed = 520;
++		max_flight_speed = 260;
+ 		missile_launch_position = "0.0 -10.5 -9.0";
+ 		missiles = 3;
+ 		model = "oolite_viper_interceptor.dat";
++		model_scale_factor = 0.4;
+ 		name = "GalCop Viper Interceptor";
+ 		roles = "interceptor wingman";
+ 		scan_class = "CLASS_POLICE";
+@@ -3847,7 +4015,7 @@
+ 				position = (12.50, 0.0, 0.0);
+ 			}
+ 		);
+-		thrust = 50;
++		thrust = 25;
+ 		weapon_facings = 1;
+ 		weapon_position_aft = "0.0 -8.0 -32.0";
+ 		weapon_position_forward = "0.0 -0.15 35.034";	
+@@ -3859,7 +4027,7 @@
+ 	{
+ 		like_ship = "oolite_template_viper";
+ 		is_template = 1;
+-		max_flight_speed = 360;
++		max_flight_speed = 180;
+ 		materials = 
+ 		{ 
+ 			"Hull" = 
+@@ -3886,7 +4054,7 @@
+ 			};
+ 		};
+ 		roles = "wingman";
+-		thrust = 36;
++		thrust = 18;
+ 	};
+ 	"oolite_template_worm" = 
+ 	{
+@@ -3923,13 +4091,14 @@
+ 		max_energy = 75;
+ 		max_flight_pitch = 1;
+ 		max_flight_roll = 2;
+-		max_flight_speed = 110;
++		max_flight_speed = 55;
+ 		missile_launch_position = "0.0 -11.01 14.76";
+ 		missiles = 0;
+ 		model = "oolite_worm.dat";
++		model_scale_factor = 0.33;
+ 		name = "Worm";
+ 		roles = "shuttle";
+-		thrust = 12;
++		thrust = 6;
+ 		weapon_facings = 1;
+ 		weapon_position_aft = "0.0 -4.8 -17.5";
+ 		weapon_position_forward = "0.0 -5.34047 19.2792";
+@@ -3946,7 +4115,7 @@
+ 		has_scoop = yes;
+ 		max_cargo = 5;
+ 		max_energy = 55;
+-		max_flight_speed = 100;
++		max_flight_speed = 50;
+ 		materials = 
+ 		{ 
+ 			"Hull" = 
+@@ -3976,8 +4145,9 @@
+ 		max_energy = 20000;
+ 		max_flight_pitch = 0.2;
+ 		max_flight_roll = 0.2;
+-		max_flight_speed = 500;
++		max_flight_speed = 250;
+ 		model = "wreck1.dat";
++		model_scale_factor = 0.33;
+ 		name = "Wreckage";
+ 		roles = "wreckage";
+ 		scan_class = "CLASS_NO_DRAW";
+diff --git a/Resources/Scripts/oolite-populator.js b/Resources/Scripts/oolite-populator.js
+index 22205c68..f636aed0 100644
+--- a/Resources/Scripts/oolite-populator.js
++++ b/Resources/Scripts/oolite-populator.js
+@@ -116,7 +116,7 @@ this.systemWillPopulate = function()
+ 						{
+ 							priority: 5,
+ 							location: "COORDINATES",
+-							coordinates: system.mainStation.position.add(system.mainStation.vectorForward.multiply(10E3)),
++							coordinates: system.mainStation.position.add(system.mainStation.vectorForward.multiply(5E3)),
+ 							callback: function(pos) {
+ 								var nb = system.addShips("buoy",1,pos,0)[0];
+ 								nb.scanClass = "CLASS_BUOY";
+@@ -141,7 +141,7 @@ this.systemWillPopulate = function()
+ 						});
+ 
+ 	/* Add asteroids */
+-	var clusters = 2*(1+Math.floor(system.scrambledPseudoRandomNumber(51728)*4));
++	var clusters = 4*(1+Math.floor(system.scrambledPseudoRandomNumber(51728)*4));
+ 	var psclusters = 1+(clusters/2);
+ 	clusters = clusters-psclusters;
+ 	
+diff --git a/src/Core/Entities/Entity.h b/src/Core/Entities/Entity.h
+index c2583612..0af1a214 100644
+--- a/src/Core/Entities/Entity.h
++++ b/src/Core/Entities/Entity.h
+@@ -44,12 +44,12 @@ extern size_t gTotalEntityMemory;
+ 
+ 
+ #define NO_DRAW_DISTANCE_FACTOR		1024.0
+-#define ABSOLUTE_NO_DRAW_DISTANCE2	(2500.0 * 2500.0 * NO_DRAW_DISTANCE_FACTOR * NO_DRAW_DISTANCE_FACTOR)
++#define ABSOLUTE_NO_DRAW_DISTANCE2	(25000.0 * 25000.0 * NO_DRAW_DISTANCE_FACTOR * NO_DRAW_DISTANCE_FACTOR)
+ // ie. the furthest away thing we can draw is at 1280km (a 2.5km wide object would disappear at that range)
+ 
+ 
+-#define SCANNER_MAX_RANGE			25600.0
+-#define SCANNER_MAX_RANGE2			655360000.0
++#define SCANNER_MAX_RANGE			8533.0
++#define SCANNER_MAX_RANGE2			72812089.0
+ 
+ #define CLOSE_COLLISION_CHECK_MAX_RANGE2 1000000000.0
+ 
+diff --git a/src/Core/Entities/OOPlanetEntity.m b/src/Core/Entities/OOPlanetEntity.m
+index 1e6540f4..930415f4 100644
+--- a/src/Core/Entities/OOPlanetEntity.m
++++ b/src/Core/Entities/OOPlanetEntity.m
+@@ -117,7 +117,7 @@ static const double kMesosphere = 10.0 * ATMOSPHERE_DEPTH;	// atmosphere effect
+ 	[self setName:OOExpand([dict oo_stringForKey:KEY_PLANETNAME defaultValue:[planetInfo oo_stringForKey:KEY_PLANETNAME defaultValue:@"%H"]])];
+ 	
+ 	int radius_km = [dict oo_intForKey:KEY_RADIUS defaultValue:[planetInfo oo_intForKey:KEY_RADIUS]];
+-	collision_radius = radius_km * 10.0;	// Scale down by a factor of 100
++	collision_radius = radius_km * 33.0;	// Scale down by a factor of 100
+ 	OOTechLevelID techLevel = [dict oo_intForKey:KEY_TECHLEVEL defaultValue:[planetInfo oo_intForKey:KEY_TECHLEVEL]];
+ 	
+ 	if (techLevel > 14)  techLevel = 14;
+diff --git a/src/Core/Entities/OOStellarBody.h b/src/Core/Entities/OOStellarBody.h
+index 547f6369..3ac74953 100644
+--- a/src/Core/Entities/OOStellarBody.h
++++ b/src/Core/Entities/OOStellarBody.h
+@@ -50,7 +50,7 @@ typedef enum
+ 
+ 
+ #define ATMOSPHERE_DEPTH		500.0
+-#define PLANET_MINIATURE_FACTOR	0.00185
++#define PLANET_MINIATURE_FACTOR	0.0005
+ #define MAX_SUBDIVIDE			6
+ 
+ 
+diff --git a/src/Core/Entities/PlayerEntity.h b/src/Core/Entities/PlayerEntity.h
+index f1efcf08..32a74603 100644
+--- a/src/Core/Entities/PlayerEntity.h
++++ b/src/Core/Entities/PlayerEntity.h
+@@ -311,10 +311,10 @@ typedef enum
+ 
+ #if OO_VARIABLE_TORUS_SPEED
+ #define HYPERSPEED_FACTOR				[PLAYER hyperspeedFactor]
+-#define MIN_HYPERSPEED_FACTOR			32.0
+-#define MAX_HYPERSPEED_FACTOR			1024.0
++#define MIN_HYPERSPEED_FACTOR			128.0
++#define MAX_HYPERSPEED_FACTOR			80192.0
+ #else
+-#define HYPERSPEED_FACTOR				32.0
++#define HYPERSPEED_FACTOR				128.0
+ #endif
+ 
+ #define PLAYER_SHIP_DESC				@"cobra3-player"
+diff --git a/src/Core/Entities/PlayerEntity.m b/src/Core/Entities/PlayerEntity.m
+index 362faf2d..4ae9d2b7 100644
+--- a/src/Core/Entities/PlayerEntity.m
++++ b/src/Core/Entities/PlayerEntity.m
+@@ -2966,7 +2966,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
+ 			if (travelling_at_hyperspeed)
+ 			{
+ 				// decrease speed to maximum normal speed
+-				float deceleration = (speed_delta * delta_t * HYPERSPEED_FACTOR);
++				float deceleration = (speed_delta * delta_t * HYPERSPEED_FACTOR * 8);
+ 				if (alertFlags & ALERT_FLAG_MASS_LOCK)
+ 				{
+ 					// decelerate much quicker in masslocks
+@@ -3232,7 +3232,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
+ 		{
+ 			double dist = stellar->zero_distance;
+ 			double rad = stellar->collision_radius;
+-			double factor = ([stellar isSun]) ? 2.0 : 4.0;
++			double factor = ([stellar isSun]) ? 1.4 : 1.0;
+ 			// plus ensure mass lock when 25 km or less from the surface of small stellar bodies
+ 			// dist is a square distance so it needs to be compared to (rad+25000) * (rad+25000)!
+ 			if (dist < rad*rad*factor || dist < rad*rad + 50000*rad + 625000000 ) 
+diff --git a/src/Core/Entities/ShipEntity.h b/src/Core/Entities/ShipEntity.h
+index cb919eca..e1df4807 100644
+--- a/src/Core/Entities/ShipEntity.h
++++ b/src/Core/Entities/ShipEntity.h
+@@ -77,7 +77,7 @@
+ #define SHIPENTITY_MAX_MISSILES			32
+ 
+ #define TURRET_TYPICAL_ENERGY			25.0f
+-#define TURRET_SHOT_SPEED				2000.0f
++#define TURRET_SHOT_SPEED				500.0f
+ #define TURRET_SHOT_DURATION			3.0
+ #define TURRET_SHOT_RANGE				(TURRET_SHOT_SPEED * TURRET_SHOT_DURATION)
+ #define TURRET_SHOT_FREQUENCY			(TURRET_SHOT_DURATION * TURRET_SHOT_DURATION * TURRET_SHOT_DURATION / 100.0)
+diff --git a/src/Core/Entities/ShipEntity.m b/src/Core/Entities/ShipEntity.m
+index 9b45ac37..2aa5b4b2 100644
+--- a/src/Core/Entities/ShipEntity.m
++++ b/src/Core/Entities/ShipEntity.m
+@@ -739,7 +739,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
+ 	[self setTrackCloseContacts:[shipDict oo_boolForKey:@"track_contacts" defaultValue:NO]];
+ 	
+ 	// ship skin insulation factor (1.0 is normal)
+-	[self setHeatInsulation:[shipDict oo_floatForKey:@"heat_insulation" defaultValue:[self hasHeatShield] ? 2.0 : 1.0]];
++	[self setHeatInsulation:[shipDict oo_floatForKey:@"heat_insulation" defaultValue:[self hasHeatShield] ? 6.6 : 3.3]];
+ 	
+ 	// unpiloted (like missiles asteroids etc.)
+ 	_explicitlyUnpiloted = [shipDict oo_fuzzyBooleanForKey:@"unpiloted"];
+@@ -4709,7 +4709,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
+ 				jink = kZeroVector; // almost all behaviours
+ 
+ 				// TODO: good pilots use behaviour_attack_sniper sometimes
+-				if (getWeaponRangeFromType(forward_weapon_real_type) > 12500 && range > 12500)
++				if (getWeaponRangeFromType(forward_weapon_real_type) > 3750 && range > 3750)
+ 				{
+ 					behaviour = BEHAVIOUR_ATTACK_SNIPER;
+ 				}
+@@ -5048,7 +5048,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
+ 	double  range = [self rangeToPrimaryTarget];
+ 	float	max_available_speed = maxFlightSpeed;
+ 
+-	if (range < 15000)
++	if (range < 3750)
+ 	{
+ 		behaviour = BEHAVIOUR_ATTACK_TARGET;
+ 	}
+@@ -5281,11 +5281,11 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
+ 
+ 	[self trackPrimaryTarget:delta_t:NO];
+ 
+-	/* Don't open fire until within 3km - it doesn't take many mining
++	/* Don't open fire until within 0.5km - it doesn't take many mining
+ 	 * laser shots to destroy an asteroid, but some of these mining
+ 	 * ships are way too slow to effectively chase down the debris:
+ 	 * wait until reasonably close before trying to split it. */
+-	if (range < 3000)
++	if (range < 500)
+ 	{
+ 		[self fireMainWeapon:range];
+ 	}
+@@ -13927,7 +13927,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
+ 			my_entities[station_count++] = [uni_entities[i] retain];		//	retained
+ 	//
+ 	StationEntity *thing = nil, *station = nil;
+-	double range2, nearest2 = SCANNER_MAX_RANGE2 * 1000000.0; // 1000x typical scanner range (25600 km), squared.
++	double range2, nearest2 = SCANNER_MAX_RANGE2 * 10000000.0; // 1000x typical scanner range (25600 km), squared.
+ 	for (i = 0; i < station_count; i++)
+ 	{
+ 		thing = (StationEntity *)my_entities[i];
+diff --git a/src/Core/HeadUpDisplay.h b/src/Core/HeadUpDisplay.h
+index b0de90b5..b78ef163 100644
+--- a/src/Core/HeadUpDisplay.h
++++ b/src/Core/HeadUpDisplay.h
+@@ -39,7 +39,7 @@ MA 02110-1301, USA.
+ 
+ #define SCANNER_CENTRE_X	0
+ #define SCANNER_CENTRE_Y	-180
+-#define SCANNER_SCALE		256
++#define SCANNER_SCALE		85.33
+ #define SCANNER_WIDTH		288
+ #define SCANNER_HEIGHT		72
+ 
+diff --git a/src/Core/OOLogHeader.m b/src/Core/OOLogHeader.m
+index ae2a75ce..6db5fbf6 100644
+--- a/src/Core/OOLogHeader.m
++++ b/src/Core/OOLogHeader.m
+@@ -162,7 +162,7 @@ void OOPrintLogHeader(void)
+ 	
+ 	NSString *versionString = nil;
+ 	#if (defined (SNAPSHOT_BUILD) && defined (OOLITE_SNAPSHOT_VERSION))
+-		versionString = @"development version " OOLITE_SNAPSHOT_VERSION;
++		versionString = @"Rescaling Experiment version " OOLITE_SNAPSHOT_VERSION;
+ 	#else
+ 		versionString = [NSString stringWithFormat:@"version %@", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]];
+ 	#endif
+diff --git a/src/Core/OOShipLibraryDescriptions.m b/src/Core/OOShipLibraryDescriptions.m
+index 89089265..f8725a90 100644
+--- a/src/Core/OOShipLibraryDescriptions.m
++++ b/src/Core/OOShipLibraryDescriptions.m
+@@ -46,19 +46,19 @@ NSString *OOShipLibrarySpeed (ShipEntity *demo_ship)
+ 	{
+ 		result = DESC(@"oolite-ship-library-speed-stationary");
+ 	}
+-	else if (param <= 150)
++	else if (param <= 75)
+ 	{
+ 		result = DESC(@"oolite-ship-library-speed-veryslow");
+ 	}
+-	else if (param <= 250)
++	else if (param <= 125)
+ 	{
+ 		result = DESC(@"oolite-ship-library-speed-slow");
+ 	}
+-	else if (param <= 325)
++	else if (param <= 162.5)
+ 	{
+ 		result = DESC(@"oolite-ship-library-speed-average");
+ 	}
+-	else if (param <= 425)
++	else if (param <= 212.5)
+ 	{
+ 		result = DESC(@"oolite-ship-library-speed-fast");
+ 	}
+diff --git a/src/Core/Universe.m b/src/Core/Universe.m
+index 82def99a..753431cf 100644
+--- a/src/Core/Universe.m
++++ b/src/Core/Universe.m
+@@ -113,7 +113,7 @@ enum
+ #define MAX_NUMBER_OF_ENTITIES				200
+ #define STANDARD_STATION_ROLL				0.4
+ // currently twice scanner radius
+-#define LANE_WIDTH			51200.0
++#define LANE_WIDTH			(2.83 * SCANNER_MAX_RANGE)
+ 
+ static NSString * const kOOLogUniversePopulateError			= @"universe.populate.error";
+ static NSString * const kOOLogUniversePopulateWitchspace	= @"universe.populate.witchspace";
+@@ -890,7 +890,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
+ 	OOPlanetEntity *a_planet = [[OOPlanetEntity alloc] initFromDictionary:planetDict withAtmosphere:[planetDict oo_boolForKey:@"has_atmosphere" defaultValue:YES] andSeed:systemSeed forSystem:systemID];
+ 	
+ 	double planet_zpos = [planetDict oo_floatForKey:@"planet_distance" defaultValue:500000];
+-	planet_zpos *= [planetDict oo_floatForKey:@"planet_distance_multiplier" defaultValue:1.0];
++	planet_zpos *= [planetDict oo_floatForKey:@"planet_distance_multiplier" defaultValue:5.0];
+ 	
+ #ifdef OO_DUMP_PLANETINFO
+ 	OOLog(@"planetinfo.record",@"planet zpos = %f",planet_zpos);
+@@ -1149,7 +1149,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
+ #ifdef OO_DUMP_PLANETINFO
+ 	OOLog(@"planetinfo.record",@"station_vector = %.3f %.3f %.3f",vf.x,vf.y,vf.z);
+ #endif
+-	stationPos = HPvector_subtract(stationPos, vectorToHPVector(vector_multiply_scalar(vf, 2.0 * planet_radius)));
++	stationPos = HPvector_subtract(stationPos, vectorToHPVector(vector_multiply_scalar(vf, 1.5 * planet_radius)));
+ 	
+ 
+ 	//// possibly systeminfo has an override for the station
+@@ -4704,7 +4704,7 @@ static const OOMatrix	starboard_matrix =
+ 			[self drawMessage];
+ 			
+ #if (defined (SNAPSHOT_BUILD) && defined (OOLITE_SNAPSHOT_VERSION))
+-			[self drawWatermarkString:@"Development version " @OOLITE_SNAPSHOT_VERSION];
++			[self drawWatermarkString:@"Rescaling Experiment version " @OOLITE_SNAPSHOT_VERSION];
+ #endif
+ 			
+ 			OOCheckOpenGLErrors(@"Universe after drawing HUD");

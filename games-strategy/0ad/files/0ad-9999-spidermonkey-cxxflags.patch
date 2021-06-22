@@ -1,0 +1,18 @@
+--- ./libraries/source/spidermonkey/build.sh~	2019-08-22 06:47:33.000000000 +0100
++++ ./libraries/source/spidermonkey/build.sh	2019-08-22 07:39:08.319712386 +0100
+@@ -100,13 +100,13 @@
+ cd build-release
+ if [ "${OS}" = "Windows_NT" ]
+ then
+-  CXXFLAGS="${CXXFLAGS} ${TLCXXFLAGS}" ../configure ${CONF_OPTS} \
++  CXXFLAGS="${TLCXXFLAGS} ${CXXFLAGS}" ../configure ${CONF_OPTS} \
+     --with-nspr-cflags="${NSPR_INCLUDES}" --with-nspr-libs="${NSPR_LIBS}" \
+     --enable-optimize \
+     #--enable-gczeal \
+     #--enable-debug-symbols
+ else
+-  CXXFLAGS="${CXXFLAGS} ${TLCXXFLAGS}" ../configure ${CONF_OPTS} \
++  CXXFLAGS="${TLCXXFLAGS} ${CXXFLAGS}" ../configure ${CONF_OPTS} \
+     --enable-optimize \
+     #--enable-gczeal \
+     #--enable-debug-symbols

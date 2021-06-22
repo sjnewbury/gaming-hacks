@@ -1,0 +1,11 @@
+--- ./src/linux/cd_sdl.c~	2002-02-16 19:03:06.000000000 +0000
++++ ./src/linux/cd_sdl.c	2021-05-20 13:32:00.315485795 +0100
+@@ -27,7 +27,7 @@
+ */
+ 
+ #include <stdio.h>
+-#include "SDL.h"
++#include <SDL/SDL.h>
+ #include "../client/client.h"
+ 
+ static qboolean cdValid = false;

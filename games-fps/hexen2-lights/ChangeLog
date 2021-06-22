@@ -1,0 +1,22 @@
+# ChangeLog for games-fps/hexen2-lights
+# Copyright 1999-2010 Gentoo Foundation; Distributed under the GPL v2
+# $Header: $
+
+  11 Jul 2010; Michael Weber (xmw) <gentoo@xmw.de> hexen2-lights-1.ebuild:
+  Ebuild cleanup
+
+  26 Mar 2009; Tiago Cunha <tcunha@gentoo.org> metadata.xml:
+  Fix metadata.xml.
+
+  19 Jan 2009; Thomas Sachau (Tommy[D]) <tommy@gentoo.org>
+  hexen2-lights-1.ebuild:
+  Drop emty DEPEND, add die statement
+
+  25 Jul 2007; Davide Cendron (scen) <scen@gentoo.org>
+  hexen2-lights-1.ebuild:
+  Added ~ppc keyworkd
+
+  11 Jun 2007; Davide Cendron (scen) <scen@gentoo.org>
+  +hexen2-lights-1.ebuild, +metadata.xml:
+  New Ebuild for bug 139278 thanks to Paul Bredbury
+

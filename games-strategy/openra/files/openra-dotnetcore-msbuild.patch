@@ -1,0 +1,11 @@
+--- ./Makefile~	2020-04-26 12:38:42.000000000 +0100
++++ ./Makefile	2021-03-13 13:35:59.496514646 +0000
+@@ -76,7 +76,7 @@
+ INSTALL_DATA = $(INSTALL) -m644
+ 
+ # Toolchain
+-MSBUILD = msbuild -verbosity:m -nologo
++MSBUILD = dotnet msbuild -verbosity:m -nologo
+ 
+ # Enable 32 bit builds while generating the windows installer
+ WIN32 = false

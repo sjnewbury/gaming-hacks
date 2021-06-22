@@ -1,0 +1,11 @@
+--- ./neo/CMakeLists.txt~	2020-11-07 20:51:31.000000000 +0000
++++ ./neo/CMakeLists.txt	2020-11-07 20:55:03.013620326 +0000
+@@ -1581,7 +1581,6 @@
+ 
+ 		if(SDL2)
+ 			find_package(SDL2 REQUIRED)
+-			include_directories(${SDL2_INCLUDE_DIRS})
+-			set(SDLx_LIBRARY ${SDL2_LIBRARIES})
++ 			set(SDLx_LIBRARY SDL2::SDL2)
+ 		else()
+ 			find_package(SDL REQUIRED)

@@ -1,0 +1,119 @@
+From: Julian Ospald <hasufell@gentoo.org>
+Date: Sun Jun 24 18:32:38 UTC 2012
+Subject: build system
+
+* respect flags
+* disable debug build of spidermonkey
+
+--- ./libraries/source/spidermonkey/build.sh~	2021-01-05 23:04:54.000000000 +0000
++++ ./libraries/source/spidermonkey/build.sh	2021-01-05 23:56:37.792692010 +0000
+@@ -101,7 +101,6 @@
+   tar xjf "${FOLDER}.tar.bz2"
+ 
+   # Clean up header files that may be left over by earlier versions of SpiderMonkey
+-  rm -rf include-unix-debug
+   rm -rf include-unix-release
+ 
+   # Apply patches
+@@ -113,20 +112,6 @@
+   cd "$FOLDER"
+ fi
+ 
+-mkdir -p build-debug
+-cd build-debug
+-# SM configure checks for autoconf, but we don't actually need it.
+-# To avoid a dependency, pass something arbitrary (it does need to be an actual program).
+-# llvm-objdump is searched for with the complete name, not simply 'objdump', account for that.
+-CXXFLAGS="${CXXFLAGS}" ../js/src/configure AUTOCONF="ls" \
+-  LLVM_OBJDUMP="${LLVM_OBJDUMP}" \
+-  ${CONF_OPTS} \
+-  --enable-debug \
+-  --disable-optimize \
+-  --enable-gczeal
+-${MAKE} ${MAKE_OPTS}
+-cd ..
+-
+ mkdir -p build-release
+ cd build-release
+ CXXFLAGS="${CXXFLAGS}" ../js/src/configure AUTOCONF="ls" \
+@@ -166,21 +151,15 @@
+   pushd "${FOLDER}/build-release/dist/include"
+   rm -f mozzconf.h zconf.h zlib.h
+   popd
+-  pushd "${FOLDER}/build-debug/dist/include"
+-  rm -f mozzconf.h zconf.h zlib.h
+-  popd
+ fi
+ 
+ # Copy files into the necessary locations for building and running the game
+ 
+ # js-config.h is different for debug and release builds, so we need different include directories for both
+-mkdir -p "${INCLUDE_DIR_DEBUG}"
+ mkdir -p "${INCLUDE_DIR_RELEASE}"
+ cp -R -L "${FOLDER}"/build-release/dist/include/* "${INCLUDE_DIR_RELEASE}/"
+-cp -R -L "${FOLDER}"/build-debug/dist/include/* "${INCLUDE_DIR_DEBUG}/"
+ 
+ # These align the ligns below, making it easier to check for mistakes.
+-DEB="debug"
+ REL="release"
+ 
+ mkdir -p lib/
+@@ -192,30 +171,21 @@
+ if [ "`uname -s`" = "Darwin" ]
+ then
+   # On MacOS, copy the static libraries only.
+-  cp -L "${FOLDER}/build-${DEB}/js/src/build/${LIB_PREFIX}js_static${LIB_SUFFIX}" "lib/${LIB_PREFIX}${LIB_NAME}-${DEB}${LIB_SUFFIX}"
+   cp -L "${FOLDER}/build-${REL}/js/src/build/${LIB_PREFIX}js_static${LIB_SUFFIX}" "lib/${LIB_PREFIX}${LIB_NAME}-${REL}${LIB_SUFFIX}"
+ elif [ "${OS}" = "Windows_NT" ]
+ then
+   # Windows needs DLLs to binaries/, static stubs to lib/ and debug symbols
+-  cp -L "${FOLDER}/build-${DEB}/js/src/build/${LIB_PREFIX}${LIB_NAME}-${DEB}${LIB_SUFFIX}" "../../../binaries/system/${LIB_PREFIX}${LIB_NAME}-${DEB}${LIB_SUFFIX}"
+   cp -L "${FOLDER}/build-${REL}/js/src/build/${LIB_PREFIX}${LIB_NAME}-${REL}${LIB_SUFFIX}" "../../../binaries/system/${LIB_PREFIX}${LIB_NAME}-${REL}${LIB_SUFFIX}"
+-  cp -L "${FOLDER}/build-${DEB}/js/src/build/${LIB_PREFIX}${LIB_NAME}-${DEB}${STATIC_LIB_SUFFIX}" "lib/${LIB_PREFIX}${LIB_NAME}-${DEB}${STATIC_LIB_SUFFIX}"
+   cp -L "${FOLDER}/build-${REL}/js/src/build/${LIB_PREFIX}${LIB_NAME}-${REL}${STATIC_LIB_SUFFIX}" "lib/${LIB_PREFIX}${LIB_NAME}-${REL}${STATIC_LIB_SUFFIX}"
+   # Copy debug symbols as well.
+-  cp -L "${FOLDER}/build-${DEB}/js/src/build/${LIB_PREFIX}${LIB_NAME}-${DEB}.pdb" "../../../binaries/system/${LIB_PREFIX}${LIB_NAME}-${DEB}.pdb"
+   cp -L "${FOLDER}/build-${REL}/js/src/build/${LIB_PREFIX}${LIB_NAME}-${REL}.pdb" "../../../binaries/system/${LIB_PREFIX}${LIB_NAME}-${REL}.pdb"
+-  # Copy the debug jsrust library.
+-  rust_path=$(grep jsrust < "${FOLDER}/build-debug/js/src/build/backend.mk" | cut -d = -f 2 | cut -c2-)
+-  cp -L "${rust_path}" "lib/${LIB_PREFIX}${LIB_NAME}-rust-debug${STATIC_LIB_SUFFIX}"
+   # Windows need some additional libraries for posix emulation.
+   cp -L "${FOLDER}/build-release/dist/bin/${LIB_PREFIX}nspr4.dll" "../../../binaries/system/${LIB_PREFIX}nspr4.dll"
+   cp -L "${FOLDER}/build-release/dist/bin/${LIB_PREFIX}plc4.dll" "../../../binaries/system/${LIB_PREFIX}plc4.dll"
+   cp -L "${FOLDER}/build-release/dist/bin/${LIB_PREFIX}plds4.dll" "../../../binaries/system/${LIB_PREFIX}plds4.dll"
+ else
+   # Copy shared libs to both lib/ and binaries/ so the compiler and executable (resp.) can find them.
+-  cp -L "${FOLDER}/build-${DEB}/js/src/build/${LIB_PREFIX}${LIB_NAME}-${DEB}${LIB_SUFFIX}" "lib/${LIB_PREFIX}${LIB_NAME}-${DEB}${LIB_SUFFIX}"
+   cp -L "${FOLDER}/build-${REL}/js/src/build/${LIB_PREFIX}${LIB_NAME}-${REL}${LIB_SUFFIX}" "lib/${LIB_PREFIX}${LIB_NAME}-${REL}${LIB_SUFFIX}"
+-  cp -L "${FOLDER}/build-${DEB}/js/src/build/${LIB_PREFIX}${LIB_NAME}-${DEB}${LIB_SUFFIX}" "../../../binaries/system/${LIB_PREFIX}${LIB_NAME}-${DEB}${LIB_SUFFIX}"
+   cp -L "${FOLDER}/build-${REL}/js/src/build/${LIB_PREFIX}${LIB_NAME}-${REL}${LIB_SUFFIX}" "../../../binaries/system/${LIB_PREFIX}${LIB_NAME}-${REL}${LIB_SUFFIX}"
+ fi
+ 
+--- ./libraries/source/fcollada/src/Makefile~	2021-01-05 23:04:16.000000000 +0000
++++ ./libraries/source/fcollada/src/Makefile	2021-01-05 23:51:47.576550719 +0000
+@@ -9,9 +9,9 @@
+ 
+ CXX ?= g++
+ CXXFLAGS += -fvisibility=hidden -W -Wall -Wno-unused-parameter -Wno-unused-function $(OS_DEFINE) $(PIC_FLAGS) $(CPPFLAGS)
+-CXXFLAGS_DEBUG := -O0 -g -D_DEBUG -DRETAIL
+-CXXFLAGS_RELEASE := -O2 -DNDEBUG -DRETAIL
+-CXXFLAGS_TEST := -O0 -g -D_DEBUG
++CXXFLAGS_DEBUG := -g -D_DEBUG -DRETAIL
++CXXFLAGS_RELEASE := -DNDEBUG -DRETAIL
++CXXFLAGS_TEST := -g -D_DEBUG
+ LDFLAGS_TEST= -ldl
+ LIBS += `pkg-config libxml-2.0 --libs`
+ INCLUDES += -IFCollada `pkg-config libxml-2.0 --cflags`
+--- ./build/premake/premake5/build/gmake2.unix/Premake5.make~	2021-01-06 00:09:49.000000000 +0000
++++ ./build/premake/premake5/build/gmake2.unix/Premake5.make	2021-01-06 00:18:04.173246549 +0000
+@@ -36,8 +36,8 @@
+ TARGET = $(TARGETDIR)/premake5
+ OBJDIR = obj/Release/Premake5
+ DEFINES += -DPREMAKE_COMPRESSION -DCURL_STATICLIB -DPREMAKE_CURL -DNDEBUG -DLUA_USE_POSIX -DLUA_USE_DLOPEN
+-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -O3 -Wall -Wextra
+-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -O3 -Wall -Wextra -fno-stack-protector
++ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -Wall -Wextra
++ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -Wall -Wextra -fno-stack-protector
+ LIBS += bin/Release/liblua-lib.a bin/Release/libzip-lib.a bin/Release/libzlib-lib.a bin/Release/libcurl-lib.a bin/Release/libmbedtls-lib.a -lm -ldl -lrt
+ LDDEPS += bin/Release/liblua-lib.a bin/Release/libzip-lib.a bin/Release/libzlib-lib.a bin/Release/libcurl-lib.a bin/Release/libmbedtls-lib.a
+ ALL_LDFLAGS += $(LDFLAGS) -s -rdynamic

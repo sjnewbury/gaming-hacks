@@ -1,0 +1,32 @@
+--- ./source/ps/Profiler2GPU.cpp~	2020-10-12 17:20:26.000000000 +0100
++++ ./source/ps/Profiler2GPU.cpp	2020-10-12 17:35:29.536779276 +0100
+@@ -29,6 +29,9 @@
+ #include "ps/ConfigDB.h"
+ #include "ps/Profiler2.h"
+ 
++#include <deque>
++#include <stack>
++
+ #if !CONFIG2_GLES
+ 
+ class CProfiler2GPU_base
+--- ./source/ps/UserReport.cpp~	2020-10-12 17:20:26.000000000 +0100
++++ ./source/ps/UserReport.cpp	2020-10-12 17:39:01.617940893 +0100
+@@ -36,6 +36,7 @@
+ #include <mutex>
+ #include <string>
+ #include <thread>
++#include <deque>
+ 
+ #define DEBUG_UPLOADS 0
+ 
+--- ./source/graphics/TextureConverter.h~	2020-10-12 17:20:26.000000000 +0100
++++ ./source/graphics/TextureConverter.h	2020-10-12 17:40:34.696580322 +0100
+@@ -25,6 +25,7 @@
+ #include <condition_variable>
+ #include <mutex>
+ #include <thread>
++#include <deque>
+ 
+ class MD5;
+ 

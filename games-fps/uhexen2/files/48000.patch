@@ -1,0 +1,11 @@
+--- ./libs/timidity/instrum.c~	2020-10-15 23:33:44.000000000 +0100
++++ ./libs/timidity/instrum.c	2020-10-15 23:48:22.321059779 +0100
+@@ -84,7 +84,7 @@
+   r = (sint32) (rate & 0x3f) << r; /* 6.9 fixed point */
+ 
+   /* 15.15 fixed point. */
+-  r = ((r * 44100) / song->rate) * song->control_ratio;
++  r = ((r * 48000) / song->rate) * song->control_ratio;
+ 
+ #ifdef FAST_DECAY
+   return r << 10;

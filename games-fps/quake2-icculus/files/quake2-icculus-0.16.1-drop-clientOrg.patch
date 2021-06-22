@@ -1,0 +1,10 @@
+--- ./src/client/client.h~	2020-10-12 17:27:08.000000000 +0100
++++ ./src/client/client.h	2020-10-12 17:31:47.122065309 +0100
+@@ -52,7 +52,6 @@
+ #ifdef QMAX
+ #define random()	((rand () & 0x7fff) / ((float)0x7fff))
+ #define crandom()	(2.0 * (random() - 0.5))
+-vec3_t clientOrg; //lerped org of client for server->client side effects
+ 
+ void vectoangles2 (vec3_t value1, vec3_t angles);
+ 

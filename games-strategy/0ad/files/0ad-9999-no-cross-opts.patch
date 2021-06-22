@@ -1,0 +1,15 @@
+--- ./libraries/source/spidermonkey/build.sh~	2021-01-07 14:19:21.000000000 +0000
++++ ./libraries/source/spidermonkey/build.sh	2021-01-07 15:03:43.616043970 +0000
+@@ -78,12 +78,6 @@
+   CONF_OPTS="${CONF_OPTS} --enable-valgrind"
+ fi
+ 
+-# We need to be able to override CHOST in case it is 32bit userland on 64bit kernel
+-CONF_OPTS="${CONF_OPTS} \
+-  ${CBUILD:+--build=${CBUILD}} \
+-  ${CHOST:+--host=${CHOST}} \
+-  ${CTARGET:+--target=${CTARGET}}"
+-
+ echo "SpiderMonkey build options: ${CONF_OPTS}"
+ 
+ # It can occasionally be useful to not rebuild everything, but don't do this by default.

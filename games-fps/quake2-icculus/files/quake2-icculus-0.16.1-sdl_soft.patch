@@ -1,0 +1,13 @@
+--- ./Makefile~	2018-02-11 13:34:51.000000000 +0000
++++ ./Makefile	2018-02-11 13:48:20.847334398 +0000
+@@ -401,6 +401,10 @@
+   $(warning Warning: FXGL not currently supported for $(ARCH))
+  endif
+ 
++ ifeq ($(strip $(BUILD_SDL)),YES)
++  TARGETS += $(BUILDDIR)/ref_softsdl.$(SHLIBEXT)
++ endif
++
+  ifeq ($(strip $(BUILD_SDLGL)),YES)
+   TARGETS += $(BUILDDIR)/ref_sdlgl.$(SHLIBEXT)
+  endif

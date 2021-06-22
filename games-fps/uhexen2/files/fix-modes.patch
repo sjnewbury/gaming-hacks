@@ -1,0 +1,11 @@
+--- ./engine/h2shared/gl_vidsdl.c~	2020-10-16 22:11:49.000000000 +0100
++++ ./engine/h2shared/gl_vidsdl.c	2020-10-16 22:16:11.805048536 +0100
+@@ -1665,7 +1665,7 @@
+ 		// as the highest reported one.
+ 		Con_SafePrintf ("WARNING: 640x480 not found in fullscreen modes\n"
+ 				"Using the largest reported dimension as default\n");
+-		vid_default = num_fmodes;
++		vid_default = num_fmodes -1;
+ 	}
+ 
+ 	// limit the windowed (standart) modes list to desktop dimensions
