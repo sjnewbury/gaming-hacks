@@ -5,9 +5,6 @@ EAPI=7
 
 inherit desktop toolchain-funcs xdg-utils
 
-EGIT_COMMIT="7225643e3"
-MY_BUILD="$(ver_cut 2)"
-MY_DATE="$(ver_cut 1)"
 MY_PV_HRP="5.4"
 MY_PV_OFFENSIVE_XXX="1.33"
 MY_PV_OPL="2.01"
@@ -17,8 +14,8 @@ MY_PV_VOXELS="1.21"
 
 DESCRIPTION="An open source engine port of the classic PC first person shooter Duke Nukem 3D"
 HOMEPAGE="http://www.eduke32.com/"
+
 SRC_URI="
-	http://dukeworld.com/eduke32/synthesis/latest/${PN}_src_${MY_DATE}-${MY_BUILD}-${EGIT_COMMIT}.tar.xz
 	https://www.eduke32.com/images/eduke32_classic.png
 	hrp? ( http://www.duke4.org/files/nightfright/hrp/duke3d_hrp.zip -> duke3d_hrp-${MY_PV_HRP}.zip )
 	offensive? ( http://www.duke4.org/files/nightfright/related/duke3d_xxx.zip -> duke3d_xxx-${MY_PV_OFFENSIVE_XXX}.zip )
@@ -28,10 +25,23 @@ SRC_URI="
 	voxels? ( https://www.dropbox.com/s/yaxfahyvskyvt4r/duke3d_voxels.zip -> duke3d_voxels-${MY_PV_VOXELS}.zip )
 "
 
+if [[ ${PV} = 9999* ]]; then
+	inherit git-r3
+	EGIT_REPO_URI=https://voidpoint.io/terminx/eduke32.git
+else
+	EGIT_COMMIT="39e8f1852"
+	MY_BUILD="$(ver_cut 2)"
+	MY_DATE="$(ver_cut 1)"
+	SRC_URI="
+		http://dukeworld.com/eduke32/synthesis/${MY_DATE}-${MY_BUILD}-${EGIT_COMMIT}/${PN}_src_${MY_DATE}-${MY_BUILD}-${EGIT_COMMIT}.tar.xz
+		${SRC_URI}
+	"
+	KEYWORDS="~amd64 ~arm ~arm64 ~x86"
+fi
+
 LICENSE="BUILDLIC GPL-2 HRP"
 SLOT="0"
-KEYWORDS="~amd64 ~arm64 ~x86"
-IUSE="duke3d fluidsynth gtk hrp offensive opengl opl png psx sc-55 server sdk timidity tools voidsw vorbis voxels vpx xmp"
+IUSE="duke3d fluidsynth gtk hrp offensive opengl opl png psx sc-55 server sdk timidity tools voidsw voxels vpx xmp"
 REQUIRED_USE="
 	hrp? ( duke3d !voxels )
 	offensive? ( duke3d )
@@ -46,12 +56,14 @@ REQUIRED_USE="
 # instead it tries to build a test game, which does not compile
 RESTRICT="bindist test"
 
-S="${WORKDIR}/${PN}_${MY_DATE}-${MY_BUILD}-${EGIT_COMMIT}"
+[[ ${PV} == 9999* ]] || S="${WORKDIR}/${PN}_${MY_DATE}-${MY_BUILD}-${EGIT_COMMIT}"
 
 RDEPEND="
 	media-libs/flac
+	media-libs/libogg
 	media-libs/libsdl2[joystick,opengl?,sound,video]
-	media-libs/sdl2-mixer[flac,fluidsynth?,midi,timidity?,vorbis?]
+	media-libs/libvorbis
+	media-libs/sdl2-mixer[flac,fluidsynth?,midi,timidity?,vorbis]
 	sys-libs/zlib
 	gtk? ( x11-libs/gtk+:2 )
 	opengl? (
@@ -60,10 +72,6 @@ RDEPEND="
 	)
 	png? ( media-libs/libpng:0= )
 	vpx? ( media-libs/libvpx:= )
-	vorbis? (
-		media-libs/libogg
-		media-libs/libvorbis
-	)
 	xmp? ( media-libs/exempi:2= )
 "
 
@@ -77,7 +85,7 @@ BDEPEND="
 	x86? ( dev-lang/nasm )
 "
 
-PDEDEND="duke3d? ( games-fps/duke3d-data )"
+PDEPEND="duke3d? ( games-fps/duke3d-data )"
 
 PATCHES=(
 	"${FILESDIR}/${PN}-20190820.8043-log-to-tmpdir.patch"
@@ -87,8 +95,11 @@ PATCHES=(
 
 src_unpack() {
 	# Extract only the eduke32 archive
-	unpack ${PN}_src_${MY_DATE}-${MY_BUILD}-${EGIT_COMMIT}.tar.xz
-
+	if [[ ${PV} == 9999* ]]; then
+		git-r3_src_unpack
+	else
+		unpack ${PN}_src_${MY_DATE}-${MY_BUILD}-${EGIT_COMMIT}.tar.xz
+	fi
 	# Unpack only the documentation
 	if use hrp; then
 		unzip -q "${DISTDIR}"/duke3d_hrp-${MY_PV_HRP}.zip hrp_readme.txt hrp_todo.txt || die
@@ -122,7 +133,6 @@ src_compile() {
 		FORCEDEBUG=0
 		HAVE_FLAC=1
 		HAVE_GTK2=$(usex gtk 1 0)
-		HAVE_VORBIS=$(usex vorbis 1 0)
 		HAVE_XMP=$(usex xmp 1 0)
 		LINKED_GTK=$(usex gtk 1 0)
 		LTO=1
@@ -143,7 +153,7 @@ src_compile() {
 		SDL_TARGET=2
 		SIMPLE_MENU=0
 		STRIP=""
-		TANDALONE=0
+		STANDALONE=0
 		STARTUP_WINDOW=$(usex gtk 1 0)
 		USE_OPENGL=$(usex opengl 1 0)
 		USE_LIBVPX=$(usex vpx 1 0)

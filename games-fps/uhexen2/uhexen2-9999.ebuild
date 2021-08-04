@@ -386,10 +386,14 @@ src_install() {
 		# Really?!?
 		dobin utils/dcc/dhcc || die "dobin dhcc failed"
 
-		local utils_list="light qbsp qfiles vis"
+		local utils_list="qbsp qfiles vis"
 		for x in ${utils_list};do
 			dobin utils/${x}/${x} || die "dobin utils part 1 failed for ${x}"
 		done
+
+		# prevent collision with dev-libs/light
+		newbin utils/light/light "${PN}-light"
+
 		# consistent spelling!?!
 		dobin utils/jsh2color/jsh2colour || die "dobin jsh2colour failed"
 
@@ -462,7 +466,7 @@ pkg_postinst() {
 		einfo " - genmodel (3-D model grabber)"
 		einfo " - hcc (HexenC compiler)"
 		einfo " - jsh2color (light colouring utility)"
-		einfo " - maputils (Map compiling tools: bspinfo, light, qbsp, vis)"
+		einfo " - maputils (Map compiling tools: bspinfo, ${PN}-light, qbsp, vis)"
 		einfo " - qfiles (build pak files and regenerate bsp models)"
 		einfo " - bsp2wal (extract all textures from a bsp file)"
 		einfo " - lmp2pcx (convert hexen2 texture data into pcx and tga)"

@@ -1,51 +1,66 @@
-# Copyright 1999-2020 Gentoo Authors
+# Copyright 1999-2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=7
 
 CDROM_OPTIONAL="yes"
-inherit eutils cdrom
+MY_PN_DEMO="3dduke"
+MY_PN_GOG="setup_duke3d"
+MY_PV_DEMO="13"
+MY_PV_GOG="2.0.0.84"
+MY_P_DEMO="${MY_PN_DEMO}${MY_PV_DEMO}"
+MY_P_GOG="${MY_PN_GOG}_${MY_PV_GOG}"
 
-GOG_FILE="setup_duke3d_2.0.0.84.exe"
-DESCRIPTION="Duke Nukem 3D data files"
+inherit cdrom
+
+DESCRIPTION="Duke Nukem 3D (Atomic Edition) data files"
 HOMEPAGE="http://www.3drealms.com/"
-SRC_URI="gog? ( ${GOG_FILE} )"
+SRC_URI="
+	demo? ( "ftp://ftp.3drealms.com/share/${MY_P_DEMO}.zip" )
+	gog? ( "${MY_P_GOG}.exe" )
+"
+S="${WORKDIR}"
 
 LICENSE="DUKE3D gog? ( GOG-EULA )"
 SLOT="0"
-KEYWORDS="~amd64 ~arm64 ~x86"
-IUSE="gog"
-REQUIRED_USE="^^ ( cdinstall gog )"
-RESTRICT="mirror bindist gog? ( fetch )"
+KEYWORDS=""
+IUSE="+demo gog"
+REQUIRED_USE="^^ ( cdinstall demo gog )"
+RESTRICT="bindist gog? ( fetch ) mirror"
 
-RDEPEND="games-fps/eduke32"
-DEPEND="gog? ( app-arch/innoextract
- )"
-
-S=${WORKDIR}
+BDEPEND="
+	demo? ( app-arch/unzip )
+	gog? ( app-arch/unzip )
+"
 
 pkg_nofetch() {
-	einfo "Please download ${GOG_FILE} from your GOG.com account after buying Duke Nukem 3d"
-	einfo "and put it into your DISTDIR directory."
+	if use gog; then
+		einfo "Please download ${MY_P_GOG}.sh from your GOG.com account after"
+		einfo "buying Duke Nukem 3D and place it into your DISTDIR directory."
+	fi
 }
 
 src_unpack() {
 	if use cdinstall ; then
-		export CDROM_NAME_SET=(
-			"Existing Install"
+		local CDROM_NAMES=(
+			"Existing installation"
 			"Duke Nukem 3D CD"
 			"Duke Nukem 3D Atomic Edition CD"
-			)
-		cdrom_get_cds duke3d.grp:dvd/dn3dinst/duke3d.grp:atominst/duke3d.grp
+		)
 
-		if [[ ${CDROM_SET} -ne 0
-			&& ${CDROM_SET} -ne 1
-			&& ${CDROM_SET} -ne 2 ]]
-		then
-			die "Error locating data files.";
-		fi
-	else
-		innoextract -e -s -p1 -L -I app -d gog  "${DISTDIR}"/${GOG_FILE}
+		cdrom_get_cds duke3d.grp:dn3dinst/duke3d.grp:atominst/duke3d.grp
+
+		! [[ "${CDROM_SET}" -ge 0 && "${CDROM_SET}" -le 2 ]] && die "Could not locate data files."
+	fi
+
+	if use demo; then
+		# Use '-LL' to extract everything in lowercase.
+		unzip "${DISTDIR}/${MY_P_DEMO}.zip" || die
+		unzip -LL "DN3DSW${MY_PV_DEMO}.SHR" || die
+	fi
+
+	if use gog; then
+		innoextract -e -s -p1 -L -I app -d gog "${DISTDIR}/${MY_P_GOG}".exe
 		cd ${WORKDIR}/gog/app || die
 
 		# convert to lowercase
@@ -57,20 +72,41 @@ src_unpack() {
 }
 
 src_install() {
-	local DATAROOT
+	if use cdinstall; then
+		local DATAROOT
 
-	insinto /usr/share/duke3d
-
-	if use cdinstall ; then
 		case ${CDROM_SET} in
-		0) DATAROOT="" ;;
-		1) DATAROOT="dn3dinst/" ;;
-		2) DATAROOT="atominst/" ;;
+			0) DATAROOT="" ;;
+			1) DATAROOT="dn3dinst" ;;
+			2) DATAROOT="atominst" ;;
 		esac
 
-		# avoid double slash
-		doins "${CDROM_ROOT}"/${DATAROOT}{duke3d.grp,duke.rts,game.con,user.con,demo?.dmo,defs.con}
-	else
-		doins ${WORKDIR}/gog/app/{duke3d.grp,duke.rts,game.con,user.con,demo?.dmo,defs.con}
+		pushd "${CDROM_ROOT}/${DATAROOT}" || die
+	fi
+
+	if use gog; then
+		pushd ${WORKDIR}/gog/app || die
+	fi
+
+	insinto /usr/share/duke3d
+	for file in *.con *.dmo *.grp *.rts; do
+		newins "${file}" "${file,,}"
+	done
+
+	if ! use demo; then
+		if use cdinstall && [[ "${CDROM_SET}" -ne 0 ]]; then
+			doins ../goodies/build/*.map
+		else
+			doins *.map
+		fi
+
+		popd || die
+	fi
+}
+
+pkg_postinst() {
+	if use demo; then
+		einfo "Please keep in mind, that many addons for Duke Nukem 3D will require"
+		einfo "the registered version and will not work with the shareware version."
 	fi
 }
