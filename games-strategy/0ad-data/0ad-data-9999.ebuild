@@ -2,14 +2,14 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
-EAPI=5
+EAPI=7
 
 EGIT_REPO_URI="https://github.com/0ad/0ad.git"
 if [[ ${PV} == 9999* ]]; then
 	GIT_ECLASS="git-r3"
 fi
 
-inherit games ${GIT_ECLASS}
+inherit ${GIT_ECLASS}
 
 MY_P=0ad-${PV/_/-}
 DESCRIPTION="Data files for 0ad"
@@ -34,8 +34,8 @@ EGIT_CHECKOUT_DIR=${S}
 
 src_prepare() {
 	default
-	#epatch "${FILESDIR}/${P/-data}-GL4.patch"
-	epatch "${FILESDIR}"/${P/-data}-gentoo-r1.patch
+	#eapply "${FILESDIR}/${P/-data}-GL4.patch"
+	eapply "${FILESDIR}"/${P/-data}-gentoo-r1.patch
 
 	rm binaries/data/tools/fontbuilder/fonts/*.txt
 	rm -fr binaries/data/l10n/
@@ -62,11 +62,12 @@ src_compile() {
 }
 
 src_install() {
-	insinto "${GAMES_DATADIR}"/0ad
+	insinto /usr/share/0ad
 	doins -r binaries/data/{config,tools}
-	insinto "${GAMES_DATADIR}"/0ad/mods/mod
+	insinto /usr/share/0ad/mods/mod
 	doins binaries/data/mods/mod/mod.zip
-	insinto "${GAMES_DATADIR}"/0ad/mods/public
+	insinto /usr/share/0ad/mods/public
+	fperms g+sw /usr/share/0ad/mods/public
+	fowners 0:games /usr/share/0ad/mods/public
 	doins binaries/data/mods/public/public.zip
-	prepgamesdirs
 }

@@ -51,7 +51,7 @@ RDEPEND="
 	sound? ( media-libs/libvorbis
 		media-libs/openal )"
 DEPEND="${RDEPEND}
-	=dev-lang/spidermonkey-78.6.0:78
+	>=dev-lang/spidermonkey-78.12.0:78
 	virtual/pkgconfig
 	test? ( dev-lang/perl )"
 
@@ -61,11 +61,11 @@ S=${WORKDIR}/${MY_P}
 
 src_prepare() {
 	eapply "${FILESDIR}"/${P}-gentoo-r1.patch
-#	eapply "${FILESDIR}"/${PN}-0.0.19_alpha-miniupnpc14.patch
 #	eapply "${FILESDIR}"/${P}-spidermonkey-cxxflags.patch
 	#eapply "${FILESDIR}"/${P}-GL4.patch
 #	eapply "${FILESDIR}"/${P}-gcc10.patch
 #	eapply "${FILESDIR}"/${P}-hidpi.patch
+	eapply "${FILESDIR}"/${P}-spidermonkey-new-api.patch
 	# Make COLLADA plugins happy
 	strip-flags
 
@@ -90,7 +90,7 @@ src_configure() {
 		$(usex lobby "" "--without-lobby")
 		--bindir="/usr/bin"
 		--libdir="/usr/$(get_libdir)"/${PN}
-		--datadir="/usr/share/games/${PN}"
+		--datadir="/usr/share/${PN}"
 		)
 
 	# stock premake4/5 does not work, use the shipped one
@@ -140,7 +140,7 @@ src_install() {
 	dosym /usr/bin/pyrogenesis /usr/bin/0ad
 	use editor && newbin binaries/system/ActorEditor 0ad-ActorEditor
 
-	insinto /usr/share/games/${PN}
+	insinto /usr/share/${PN}
 	doins -r binaries/data/l10n
 
 	# Need to be available for building 0ad-data
