@@ -110,7 +110,7 @@ src_prepare() {
 }
 
 src_install() {
-	insinto /usr/share/games/d2x
+	insinto /usr/share/d2x
 	doins -r data/*
 	[[ -d doc ]] && dodoc doc/*
 }

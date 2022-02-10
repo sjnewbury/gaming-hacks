@@ -1,8 +1,8 @@
 # Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
-inherit eutils unpacker games
+EAPI=7
+inherit eutils unpacker games-r1
 
 DESCRIPTION="3rd installment of the classic id 3D first-person shooter"
 HOMEPAGE="http://www.idsoftware.com/"
@@ -61,18 +61,18 @@ src_install() {
 	doins quake3.xpm README* Q3A_EULA.txt
 	if ! use dedicated ; then
 		doexe "Quake III Arena 1.32c"/linux/quake3*.x86 || die "doexe"
-		games_make_wrapper ${PN} ./quake3.x86 "${dir}" "${dir}"
+		games-r1_make_wrapper ${PN} ./quake3.x86 "${dir}" "${dir}"
 		newicon quake3.xpm ${PN}.xpm
 		make_desktop_entry ${PN} "Quake III Arena (binary)"
 		if use teamarena ; then
-			games_make_wrapper ${PN}-teamarena \
+			games-r1_make_wrapper ${PN}-teamarena \
 				"./quake3.x86 +set fs_game missionpack" "${dir}" "${dir}"
 			make_desktop_entry ${PN}-teamarena \
 				"Quake III Team Arena (binary)" quake3-bin
 		fi
 	fi
 	doexe "Quake III Arena 1.32c"/linux/q3ded || die "doexe q3ded"
-	games_make_wrapper quake3-ded ./q3ded "${dir}" "${dir}"
+	games-r1_make_wrapper quake3-ded ./q3ded "${dir}" "${dir}"
 	newinitd "${FILESDIR}"/q3ded.rc quake3-ded
 	newconfd "${FILESDIR}"/q3ded.conf.d quake3-ded
 
@@ -80,7 +80,7 @@ src_install() {
 }
 
 pkg_postinst() {
-	games_pkg_postinst
+	games-r1_pkg_postinst
 	ewarn "There are two possible security bugs in this package, both causing a"
 	ewarn "denial of service. One affects the game when running a server, the"
 	ewarn "other when running as a client."

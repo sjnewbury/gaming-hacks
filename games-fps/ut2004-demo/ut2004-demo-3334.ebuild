@@ -1,8 +1,8 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
-inherit eutils unpacker games
+EAPI=7
+inherit eutils unpacker games-r1
 
 MY_P="ut2004-lnx-demo${PV}.run"
 DESCRIPTION="Demo for the critically-acclaimed first-person shooter"
@@ -58,14 +58,14 @@ src_install() {
 	exeinto "${dir}"/System
 	doexe System/{libSDL-1.2.so.0,openal.so,ucc-bin,ut2004-bin}
 
-	games_make_wrapper ut2004-demo ./ut2004-demo "${dir}" "${dir}"
+	games-r1_make_wrapper ut2004-demo ./ut2004-demo "${dir}" "${dir}"
 	make_desktop_entry ut2004-demo "Unreal Tournament 2004 (Demo)" ut2004-demo
 
 	prepgamesdirs
 }
 
 pkg_postinst() {
-	games_pkg_postinst
+	games-r1_pkg_postinst
 	echo
 	elog "For Text To Speech:"
 	elog "   1) emerge festival speechd"

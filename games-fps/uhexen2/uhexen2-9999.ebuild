@@ -80,9 +80,10 @@ src_unpack() {
 src_prepare() {
 	default
 
-	eapply "${FILESDIR}"/${PN}-sdl2.patch
+	#eapply "${FILESDIR}"/${PN}-sdl2.patch
+	eapply "${S}"/patches/sdl2.patch
 	eapply "${FILESDIR}"/48000.patch
-	eapply "${FILESDIR}"/hidpi.patch
+	#eapply "${FILESDIR}"/hidpi.patch
 
 	# Whether to use the demo directory
 	local demo

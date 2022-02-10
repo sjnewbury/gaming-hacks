@@ -6,8 +6,8 @@
 # quake3-VER_alphaREV  -> git snapshot REV for version VER
 # quake3-VER           -> normal quake release
 
-EAPI=5
-inherit eutils flag-o-matic toolchain-funcs games
+EAPI=7
+inherit eutils flag-o-matic toolchain-funcs games-r1
 [[ "${PV}" == 9999* ]] && inherit git-r3
 
 MY_PN="ioquake3"
@@ -130,7 +130,7 @@ src_install() {
 }
 
 pkg_postinst() {
-	games_pkg_postinst
+	games-r1_pkg_postinst
 
 	ewarn "The source version of Quake III Arena will not work with PunkBuster."
 	ewarn "If you need PB support, then use the games-fps/quake3-bin package."

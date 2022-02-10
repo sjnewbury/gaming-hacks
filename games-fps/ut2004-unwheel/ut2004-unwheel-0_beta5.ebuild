@@ -1,13 +1,13 @@
 # Copyright 1999-2018 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=7
 
 MOD_DESC="multiplayer driving mod focusing on fun driving"
 MOD_NAME="UnWheel"
 MOD_DIR="unwheel"
 
-inherit games games-mods
+inherit games-r1 games-mods-r1
 
 HOMEPAGE="https://www.moddb.com/mods/unwheel"
 SRC_URI="unwheel_r5.zip

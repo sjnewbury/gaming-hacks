@@ -27,7 +27,7 @@ SRC_URI="
 
 if [[ ${PV} = 9999* ]]; then
 	inherit git-r3
-	EGIT_REPO_URI=https://voidpoint.io/terminx/eduke32.git
+	EGIT_REPO_URI=https://github.com/sjnewbury/eduke32.git
 else
 	EGIT_COMMIT="39e8f1852"
 	MY_BUILD="$(ver_cut 2)"
@@ -54,7 +54,7 @@ REQUIRED_USE="
 
 # There are no tests,
 # instead it tries to build a test game, which does not compile
-RESTRICT="bindist test"
+RESTRICT="test"
 
 [[ ${PV} == 9999* ]] || S="${WORKDIR}/${PN}_${MY_DATE}-${MY_BUILD}-${EGIT_COMMIT}"
 

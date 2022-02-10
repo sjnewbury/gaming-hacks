@@ -1,14 +1,14 @@
 # Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=7
 
 MOD_NAME="Crossfire"
 MOD_DESC="Special Forces vs Terrorists"
 MOD_DIR="TOCrossfire"
 MOD_ICON="Help/icons/TOC_TERROR2.png"
 
-inherit games games-mods
+inherit games-r1 games-mods-r1
 
 HOMEPAGE="http://to-crossfire.tnc-clan.de/"
 SRC_URI="ftp://files.tnc-clan.de/TOCrossfire/client/TOCrossfire_beta_${PV}_full.zip"
@@ -24,6 +24,7 @@ src_unpack() {
 }
 
 src_prepare() {
+	default
 	rm -f *.{exe,reg,sh,tgz,txt} || die
 	rm -rf TOCInstaller.app stuff || die
 	cd ${MOD_DIR} || die

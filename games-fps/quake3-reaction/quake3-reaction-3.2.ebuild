@@ -1,13 +1,13 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=7
 MOD_DESC="port of Action Quake 2 to Quake 3: Arena"
 MOD_NAME="Reaction"
 MOD_DIR="rq3"
 MOD_ICON="reaction-4.ico"
 
-inherit games games-mods
+inherit games-r1 games-mods-r1
 
 HOMEPAGE="http://www.rq3.com/"
 SRC_URI="

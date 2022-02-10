@@ -1,8 +1,8 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
-inherit eutils toolchain-funcs games
+EAPI=7
+inherit eutils toolchain-funcs games-r1
 
 MY_P="quake2-r${PV}"
 DESCRIPTION="The icculus.org Linux port of iD's Quake 2 engine"

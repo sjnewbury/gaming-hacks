@@ -1,12 +1,12 @@
 # Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=7
 
 MOD_DESC="Community Bonus Pack 2 Vol 1 and 2"
 MOD_NAME="Community Bonus Pack 2 Vol 1 and 2"
 
-inherit games games-mods
+inherit games-r1 games-mods-r1
 
 HOMEPAGE="https://liandri.beyondunreal.com/Unreal_Tournament_2004"
 SRC_URI="https://ut.rushbase.net/beyondunreal/official/ut2004/cbp2-volume1_zip.zip
@@ -20,6 +20,8 @@ RDEPEND="games-fps/ut2004-bonuspack-cbp1
 	games-fps/ut2004-bonuspack-mega"
 
 src_prepare() {
+	default
+
 	# Provided by ut2004-bonuspack-cbp1
 	rm Music/Soeren.ogg
 	# Provided by ut2004-bonuspack-mega

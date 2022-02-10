@@ -1,8 +1,8 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
-inherit eutils games git-r3
+EAPI=7
+inherit eutils games-r1 git-r3
 
 MY_PV=${PV//./}
 DESCRIPTION=""
@@ -22,6 +22,7 @@ DEPEND="${RDEPEND}
 	virtual/pkgconfig"
 
 src_prepare() {
+	default
 	sed	-e "/^#define OMEGALIB/s:\./lib/:${GAMES_DATADIR}/${PN}/:" \
 		-e "/^#define OMEGASTATE/s:\./lib/:${GAMES_STATEDIR}/${PN}/:" \
 		-i defs.h || die

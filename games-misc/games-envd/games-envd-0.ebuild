@@ -1,9 +1,9 @@
 # Copyright 1999-2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=7
 
-inherit multilib games
+inherit multilib games-r1
 
 DESCRIPTION="Environment file for gentoo games"
 HOMEPAGE="https://wiki.gentoo.org/wiki/Project:Games"
@@ -16,7 +16,7 @@ KEYWORDS="~alpha amd64 arm arm64 ~hppa ~m68k ~mips ppc64 ~s390 x86 ~amd64-linux 
 S=${WORKDIR}
 
 pkg_setup() {
-	games_pkg_setup
+	games-r1_pkg_setup
 	if [[ -z "${REPLACING_VERSIONS}" ]] ; then
 		if [[ -e "${EROOT%/}/etc/env.d/${GAMES_ENVD}" ]] ; then
 			einfo "removing ${EROOT%/}/etc/env.d/${GAMES_ENVD}"
@@ -26,6 +26,7 @@ pkg_setup() {
 }
 
 src_prepare() {
+	default
 	local d libdirs
 
 	for d in $(get_all_libdirs) ; do

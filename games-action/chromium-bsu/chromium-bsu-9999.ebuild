@@ -3,7 +3,7 @@
 # $Header: /var/cvsroot/gentoo-x86/games-action/chromium-bsu/chromium-bsu-0.9.15.1.ebuild,v 1.4 2013/09/05 19:22:39 ago Exp $
 
 EAPI=5
-inherit autotools eutils gnome2-utils games git-r3
+inherit autotools eutils gnome2-utils git-r3
 
 DESCRIPTION="Chromium B.S.U. - an arcade game"
 HOMEPAGE="http://chromium-bsu.sourceforge.net/"
@@ -42,7 +42,7 @@ src_prepare() {
 }
 
 src_configure() {
-	egamesconf \
+	econf \
 		--disable-ftgl \
 		--enable-glc \
 		--disable-sdl \
@@ -59,27 +59,23 @@ src_configure() {
 src_install() {
 	emake DESTDIR="${D}" install
 
-	# remove installed /usr/games/share stuff
-	rm -rf "${D}"/"${GAMES_PREFIX}"/share/
-
 	newicon -s 64 misc/${PN}.png ${PN}.png
 	domenu misc/chromium-bsu.desktop
+
+	# remove installed /usr/share/doc/${PN} stuff
+	rm -rf "${D}"/usr/share/doc/"${PN}"
 
 	# install documentation
 	dodoc AUTHORS README NEWS
 	dohtml "${S}"/data/doc/*.htm*
 	dohtml -r "${S}"/data/doc/images
-
-	prepgamesdirs
 }
 
 pkg_preinst() {
-	games_pkg_preinst
 	gnome2_icon_savelist
 }
 
 pkg_postinst() {
-	games_pkg_postinst
 	gnome2_icon_cache_update
 }
 

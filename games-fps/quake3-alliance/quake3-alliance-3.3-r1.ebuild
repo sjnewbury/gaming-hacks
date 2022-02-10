@@ -1,12 +1,12 @@
 # Copyright 1999-2009 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=7
 MOD_DESC="fast paced, off-handed grapple mod"
 MOD_NAME="Alliance"
 MOD_DIR="alliance"
 
-inherit games games-mods
+inherit games-r1 games-mods-r1
 
 HOMEPAGE="https://wiki.gentoo.org/wiki/No_homepage"
 SRC_URI="https://www.mirrorservice.org/sites/quakeunity.com/modifications/alliance/alliance30.zip
@@ -19,5 +19,6 @@ KEYWORDS="~amd64 ~x86"
 IUSE="dedicated opengl"
 
 src_prepare() {
+	default
 	rm -f *.exe
 }

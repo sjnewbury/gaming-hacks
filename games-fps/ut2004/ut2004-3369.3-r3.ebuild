@@ -1,8 +1,8 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
-inherit eutils multilib games
+EAPI=7
+inherit eutils multilib games-r1
 
 MY_P="ut2004-lnxpatch${PV%.*}-2.tar.bz2"
 DESCRIPTION="Editor's Choice Edition plus Mega Pack for the well-known first-person shooter"
@@ -43,6 +43,8 @@ QA_PREBUILT="${dir:1}/System/ut2004-bin
 	${dir:1}/System/ucc-bin"
 
 src_prepare() {
+	default
+
 	cd "${S}"/System
 
 	# These files are owned by ut2004-bonuspack-mega
@@ -77,19 +79,19 @@ src_install() {
 		dosym /usr/$(get_libdir)/libopenal.so "${dir}"/System/openal.so
 		dosym /usr/$(get_libdir)/libSDL-1.2.so.0 "${dir}"/System/libSDL-1.2.so.0
 
-		games_make_wrapper ut2004 ./ut2004 "${dir}" "${dir}"
+		games-r1_make_wrapper ut2004 ./ut2004 "${dir}" "${dir}"
 		make_desktop_entry ut2004 "Unreal Tournament 2004"
 	fi
 
 	if use dedicated ; then
-		games_make_wrapper ut2004-ded "./ucc-bin server" "${dir}"/System
+		games-r1_make_wrapper ut2004-ded "./ucc-bin server" "${dir}"/System
 	fi
 
 	prepgamesdirs
 }
 
 pkg_postinst() {
-	games_pkg_postinst
+	games-r1_pkg_postinst
 
 	# Here is where we check for the existence of a cdkey...
 	# If we don't find one, we ask the user for it

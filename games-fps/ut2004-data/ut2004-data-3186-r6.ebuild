@@ -1,8 +1,8 @@
 # Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
-inherit eutils unpacker cdrom portability games
+EAPI=7
+inherit eutils unpacker cdrom portability games-r1
 
 DESCRIPTION="Unreal Tournament 2004 - This is the data portion of UT2004"
 HOMEPAGE="http://www.unrealtournament2004.com/"
@@ -71,7 +71,7 @@ grabdirs() {
 }
 
 pkg_setup() {
-	games_pkg_setup
+	games-r1_pkg_setup
 
 	ewarn "This is a huge package. If you do not have at least 7GB of free"
 	ewarn "disk space in ${PORTAGE_TMPDIR} and also in ${GAMES_PREFIX_OPT}"
@@ -303,7 +303,7 @@ src_install() {
 		einfo "Uncompressing files... this *will* take a while..."
 		for j in Animations Maps Sounds StaticMeshes Textures ; do
 			fperms -R u+w "${dir}/${j}" || die
-			games_ut_unpack "${Ddir}"/${j}
+			games-r1_ut_unpack "${Ddir}"/${j}
 		done
 	fi
 
@@ -370,7 +370,7 @@ src_install() {
 }
 
 pkg_postinst() {
-	games_pkg_postinst
+	games-r1_pkg_postinst
 
 	elog "This is only the data portion of the game. To play UT2004,"
 	elog "you still need to install games-fps/ut2004."

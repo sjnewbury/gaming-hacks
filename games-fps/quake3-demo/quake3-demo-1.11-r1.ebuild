@@ -1,8 +1,8 @@
 # Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
-inherit eutils unpacker games
+EAPI=7
+inherit eutils unpacker games-r1
 
 DESCRIPTION="the playable demo of Quake III Arena by Id Software"
 HOMEPAGE="http://www.idsoftware.com/games/quake/quake3-arena/"
@@ -41,17 +41,17 @@ src_install() {
 
 	exeinto "${dir}"
 	newexe bin/x86/glibc-2.0/q3ded q3ded.x86
-	games_make_wrapper q3ded ./q3ded.x86 "${dir}" "${dir}"
+	games-r1_make_wrapper q3ded ./q3ded.x86 "${dir}" "${dir}"
 	if ! use dedicated; then
 		newexe bin/x86/glibc-2.0/q3demo q3demo.x86
-		games_make_wrapper q3demo ./q3demo.x86 "${dir}" "${dir}"
+		games-r1_make_wrapper q3demo ./q3demo.x86 "${dir}" "${dir}"
 		make_desktop_entry q3demo "Quake III (Demo)"
 	fi
 	prepgamesdirs
 }
 
 pkg_postinst() {
-	games_pkg_postinst
+	games-r1_pkg_postinst
 	if ! use dedicated; then
 	elog "To play the game run:"
 	elog " q3demo"

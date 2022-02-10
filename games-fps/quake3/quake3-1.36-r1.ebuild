@@ -1,8 +1,8 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
-inherit eutils flag-o-matic toolchain-funcs games
+EAPI=7
+inherit eutils flag-o-matic toolchain-funcs games-r1
 
 MY_PN="ioquake3"
 MY_PV="${PV}"
@@ -115,7 +115,7 @@ src_install() {
 }
 
 pkg_postinst() {
-	games_pkg_postinst
+	games-r1_pkg_postinst
 
 	ewarn "The source version of Quake III Arena will not work with PunkBuster."
 	ewarn "If you need PB support, then use the games-fps/quake3-bin package."

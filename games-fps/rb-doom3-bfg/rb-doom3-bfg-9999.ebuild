@@ -49,8 +49,8 @@ src_prepare() {
 	eapply "${FILESDIR}"/SDL2.patch
 	eapply "${FILESDIR}"/shaderc-shared.patch
 	eapply "${FILESDIR}"/static-idlib.patch
-	eapply "${FILESDIR}"/wayland-r1.patch
-	eapply "${FILESDIR}"/hidpi.patch
+#	eapply "${FILESDIR}"/wayland-r1.patch
+#	eapply "${FILESDIR}"/hidpi.patch
 #	eapply "${FILESDIR}"/PBR2-buildfix.patch
 	cmake-utils_src_prepare
 }

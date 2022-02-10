@@ -1,0 +1,8 @@
+#!/bin/sh
+if [ "${LD_LIBRARY_PATH+set}" = "set" ] ; then
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/opt/fso/babylon"
+else
+export LD_LIBRARY_PATH="/opt/fso/babylon"
+fi
+cd "/opt/fso/babylon" &&
+exec ./babylon "$@"

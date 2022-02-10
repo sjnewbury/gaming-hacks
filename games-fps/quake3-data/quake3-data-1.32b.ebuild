@@ -1,9 +1,9 @@
 # Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=7
 CDROM_OPTIONAL="yes"
-inherit eutils unpacker cdrom games
+inherit eutils unpacker cdrom games-r1
 
 DESCRIPTION="Quake III Arena - data portion"
 HOMEPAGE="http://icculus.org/quake3/"
@@ -41,7 +41,7 @@ src_install() {
 }
 
 pkg_postinst() {
-	games_pkg_postinst
+	games-r1_pkg_postinst
 	if ! use cdinstall ; then
 		echo
 		elog "You need to copy pak0.pk3 from your Quake3 CD into:"

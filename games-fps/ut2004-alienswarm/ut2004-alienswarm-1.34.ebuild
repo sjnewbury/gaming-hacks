@@ -2,14 +2,14 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: /var/cvsroot/gentoo-x86/games-fps/ut2004-alienswarm/ut2004-alienswarm-1.32.ebuild,v 1.5 2011/08/04 07:32:55 tupone Exp $
 
-EAPI=2
+EAPI=7
 
 MOD_DESC="an overhead-view tactical squad-based shooter"
 MOD_NAME="Alien Swarm"
 MOD_DIR="AlienSwarm"
 MOD_ICON="Help/Linux Icons/as-icon-64.png"
 
-inherit games games-mods
+inherit games-r1 games-mods-r1
 
 MY_PV=${PV/.}
 AS_V="13"
@@ -45,5 +45,6 @@ src_unpack() {
 }
 
 src_prepare() {
+	default
 	rm -f SwarmReadMe.txt ${MOD_DIR}/{*.{bat,exe},Alien-Swarm-Linux}
 }

@@ -1,9 +1,9 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
+EAPI="7"
 
-inherit gnustep-2 games flag-o-matic
+inherit gnustep-2 games-r1 flag-o-matic
 
 DESCRIPTION="Elite space trading & warfare remake"
 HOMEPAGE="http://oolite.org/"
@@ -41,13 +41,13 @@ DEPEND="${RDEPEND}
 
 S="${WORKDIR}/${P}"
 PATCHES=(
-	"${FILESDIR}/experimental-SDL2-support.patch"
+	#"${FILESDIR}/experimental-SDL2-support.patch"
 	#"${FILESDIR}/rescale-experiment.patch"
 	"${FILESDIR}/${PN}-gentoo-r1.patch"
 )
 
 pkg_setup() {
-	games_pkg_setup
+	games-r1_pkg_setup
 	gnustep-base_pkg_setup
 }
 

@@ -100,7 +100,7 @@ src_prepare() {
 }
 
 src_install() {
-	insinto /usr/share/games/d1x
+	insinto /usr/share/d1x
 	doins -r data/*
 	[[ -d doc ]] && dodoc doc/*
 }

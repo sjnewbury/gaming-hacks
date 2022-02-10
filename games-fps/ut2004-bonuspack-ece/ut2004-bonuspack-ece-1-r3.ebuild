@@ -1,12 +1,12 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=7
 
 MOD_DESC="Editor's Choice Edition bonus pack"
 MOD_NAME="Editor's Choice Edition"
 
-inherit games games-mods
+inherit games-r1 games-mods-r1
 
 MY_P="ut2004megapack-linux.tar.bz2"
 HOMEPAGE="http://www.unrealtournament2004.com/"
@@ -24,6 +24,8 @@ src_unpack() {
 }
 
 src_prepare() {
+	default
+
 	mv -f UT2004MegaPack/* . || die
 	rmdir UT2004MegaPack || die
 
