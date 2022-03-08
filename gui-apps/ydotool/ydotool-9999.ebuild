@@ -28,5 +28,5 @@ RDEPEND="
 DEPEND="
 	${RDEPEND}
 	virtual/pkgconfig
-	x11-base/wayland-proto
+	dev-libs/wayland-proto
 "
