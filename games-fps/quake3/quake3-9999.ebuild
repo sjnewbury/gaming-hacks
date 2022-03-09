@@ -26,7 +26,7 @@ KEYWORDS=""
 IUSE="dedicated opengl teamarena +openal curl vorbis voice mumble"
 
 UIDEPEND="virtual/opengl
-	media-libs/libsdl[sound,video,joystick,X,opengl]
+	media-libs/libsdl2[sound,video,joystick,X,opengl]
 	virtual/jpeg:0
 	openal? ( media-libs/openal )
 	vorbis? (
